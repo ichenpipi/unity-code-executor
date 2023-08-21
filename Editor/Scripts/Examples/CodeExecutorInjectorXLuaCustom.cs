@@ -3,7 +3,7 @@ using ChenPipi.CodeExecutor.Editor;
 using UnityEditor;
 using UnityEngine;
 
-namespace ChenPipi.CodeExecutor.Example
+namespace ChenPipi.CodeExecutor.Examples
 {
 
     /// <summary>
@@ -13,12 +13,13 @@ namespace ChenPipi.CodeExecutor.Example
     {
 
         /// <summary>
-        /// 注册
+        /// 注册 CodeExecutor 执行模式
         /// </summary>
         [CodeExecutorRegistration(5)]
         private static void Register()
         {
-            if (!CodeExecutorSettings.enableBuiltinExecModeXLua)
+            // 依赖 XLua (Standalone)
+            if (!CodeExecutorSettings.enableBuiltinExecModeXLua || !CodeExecutorSettings.enableBuiltinExecModeXLuaCustom)
             {
                 return;
             }

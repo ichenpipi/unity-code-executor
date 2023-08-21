@@ -15,7 +15,11 @@ namespace ChenPipi.CodeExecutor.Editor
         {
             menu.AddItem(new GUIContent("Built-in Execution Mode/C#"), CodeExecutorSettings.enableBuiltinExecModeCSharp, Menu_EnableBuiltinExecutionModeCSharp);
             menu.AddItem(new GUIContent("Built-in Execution Mode/XLua (Standalone)"), CodeExecutorSettings.enableBuiltinExecModeXLua, Menu_EnableBuiltinExecutionModeXLua);
-            menu.AddItem(new GUIContent("Built-in Execution Mode/XLua (Custom)"), CodeExecutorSettings.enableBuiltinExecModeXLuaCustom, Menu_EnableBuiltinExecutionModeXLuaCustom);
+            menu.AddItem(
+                new GUIContent("Built-in Execution Mode/XLua (Custom)"),
+                (CodeExecutorSettings.enableBuiltinExecModeXLua && CodeExecutorSettings.enableBuiltinExecModeXLuaCustom),
+                Menu_EnableBuiltinExecutionModeXLuaCustom
+            );
             menu.AddItem(new GUIContent("Document: How to register execution mode?"), false, Menu_Document);
             menu.AddSeparator(string.Empty);
             menu.AddItem(new GUIContent("Reload"), false, Menu_Reload);
@@ -44,6 +48,10 @@ namespace ChenPipi.CodeExecutor.Editor
 
         private void Menu_EnableBuiltinExecutionModeXLuaCustom()
         {
+            if (!CodeExecutorSettings.enableBuiltinExecModeXLua)
+            {
+                return;
+            }
             CodeExecutorSettings.enableBuiltinExecModeXLuaCustom = !CodeExecutorSettings.enableBuiltinExecModeXLuaCustom;
             UnityEditor.Compilation.CompilationPipeline.RequestScriptCompilation();
         }

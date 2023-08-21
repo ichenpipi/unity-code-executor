@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Text;
 using UnityEngine;
 
-namespace ChenPipi.CodeExecutor.Example
+namespace ChenPipi.CodeExecutor.Examples
 {
 
     /// <summary>
@@ -29,8 +29,11 @@ namespace ChenPipi.CodeExecutor.Example
             {
                 assemblyName = string.IsNullOrEmpty(assemblyName) ? DefaultAssemblyName : assemblyName;
                 Assembly assembly = Assembly.Load(assemblyName);
-                s_LuaEnvType = assembly.GetType("XLua.LuaEnv", true);
-                s_LuaTableType = assembly.GetType("XLua.LuaTable", true);
+                if (assembly != null)
+                {
+                    s_LuaEnvType = assembly.GetType("XLua.LuaEnv", true);
+                    s_LuaTableType = assembly.GetType("XLua.LuaTable", true);
+                }
             }
             catch (Exception e)
             {
@@ -39,7 +42,7 @@ namespace ChenPipi.CodeExecutor.Example
 
             if (s_LuaEnvType == null || s_LuaTableType == null)
             {
-                Debug.LogError("[CodeExecutor] Unable to reach \'XLua\', make sure you specify the correct assembly name!");
+                Debug.LogError("[CodeExecutor] Unable to reach 'XLua', make sure you specify the correct assembly name!");
             }
         }
 

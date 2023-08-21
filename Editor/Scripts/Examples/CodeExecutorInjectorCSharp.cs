@@ -3,7 +3,7 @@ using ChenPipi.CodeExecutor.Editor;
 using UnityEditor;
 using UnityEngine;
 
-namespace ChenPipi.CodeExecutor.Example
+namespace ChenPipi.CodeExecutor.Examples
 {
 
     /// <summary>

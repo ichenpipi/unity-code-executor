@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Text;
 using UnityEngine;
 
-namespace ChenPipi.CodeExecutor.Example
+namespace ChenPipi.CodeExecutor.Examples
 {
 
     /// <summary>

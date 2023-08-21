@@ -7,7 +7,7 @@ using System.Reflection;
 using System.CodeDom.Compiler;
 using Microsoft.CSharp;
 
-namespace ChenPipi.CodeExecutor.Example
+namespace ChenPipi.CodeExecutor.Examples
 {
 
     /// <summary>

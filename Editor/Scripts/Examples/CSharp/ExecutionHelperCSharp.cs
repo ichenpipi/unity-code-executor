@@ -11,9 +11,9 @@ namespace ChenPipi.CodeExecutor.Examples
 {
 
     /// <summary>
-    /// CodeExecutor C# 注入工具
+    /// CodeExecutor C# 执行工具
     /// </summary>
-    public static class InjectHelperCSharp
+    public static class ExecutionHelperCSharp
     {
 
         /// <summary>

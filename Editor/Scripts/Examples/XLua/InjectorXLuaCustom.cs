@@ -7,9 +7,9 @@ namespace ChenPipi.CodeExecutor.Examples
 {
 
     /// <summary>
-    /// 给 CodeExecutor 注入 XLua 代码执行模式
+    /// 给 CodeExecutor 注入代码执行模式
     /// </summary>
-    public static class CodeExecutorInjectorXLuaCustom
+    public static class InjectorXLuaCustom
     {
 
         /// <summary>
@@ -18,14 +18,19 @@ namespace ChenPipi.CodeExecutor.Examples
         [CodeExecutorRegistration(5)]
         private static void Register()
         {
-            // 依赖 XLua (Standalone)
-            if (!CodeExecutorSettings.enableBuiltinExecModeXLua || !CodeExecutorSettings.enableBuiltinExecModeXLuaCustom)
+            if (!CodeExecutorSettings.enableBuiltinExecModeXLuaCustom)
             {
                 return;
             }
+            // 初始化 xLua Helper
+            if (!ExecutionHelperXLua.isReady && !ExecutionHelperXLua.Init(InjectorXLua.XLuaAssemblyName))
+            {
+                return;
+            }
+            // 注册
             CodeExecutorManager.RegisterExecMode(new ExecutionMode
             {
-                name = "XLua (Custom)",
+                name = "xLua (Custom)",
                 executor = Executor,
             });
         }
@@ -37,12 +42,12 @@ namespace ChenPipi.CodeExecutor.Examples
             {
                 if (!CodeExecutorManager.ShowNotification("This execution mode is currently unavailable"))
                 {
-                    EditorUtility.DisplayDialog("CodeExecutorInjectorXLuaCustom", "This execution mode is currently unavailable!", "OK");
+                    EditorUtility.DisplayDialog("CodeExecutor", "This execution mode is currently unavailable!", "OK");
                 }
                 return null;
             }
 
-            object[] results = InjectHelperXLua.ExecuteCode(code, luaEnv);
+            object[] results = ExecutionHelperXLua.ExecuteCode(code, luaEnv);
 
             CodeExecutorManager.ShowNotification("Executed");
 
@@ -51,7 +56,7 @@ namespace ChenPipi.CodeExecutor.Examples
 
         public static object GetLuaEnv()
         {
-            // Return your in-game LuaEnv object
+            // Return your LuaEnv object
             return null;
         }
 

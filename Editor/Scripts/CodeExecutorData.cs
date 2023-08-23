@@ -18,7 +18,39 @@ namespace ChenPipi.CodeExecutor.Editor
         {
             public int version = 0;
             public SnippetInfo newSnippet = new SnippetInfo();
-            public List<SnippetInfo> snippets = new List<SnippetInfo>();
+            public List<SnippetInfo> snippets = new List<SnippetInfo>()
+            {
+                new SnippetInfo()
+                {
+                    guid = "e48e9761-cf81-4540-8155-dde48362a5b0",
+                    createTime = 0,
+                    editTime = 0,
+                    top = false,
+                    name = "HelloWorld",
+                    code = "UnityEngine.Debug.Log(\"[CodeExecutor] Hello World!\");\nUnityEngine.Debug.LogWarning(\"[CodeExecutor] Hello World!\");\nUnityEngine.Debug.LogError(\"[CodeExecutor] Hello World!\");",
+                    mode = "C#"
+                },
+                new SnippetInfo()
+                {
+                    guid = "6ac20611-c6ec-4971-a121-7ff01b44b84f",
+                    createTime = 0,
+                    editTime = 0,
+                    top = false,
+                    name = "CrazyThursday",
+                    code = "UnityEngine.Debug.LogError(\"[CodeExecutor] Crazy Thursday\");",
+                    mode = "C#"
+                },
+                new SnippetInfo()
+                {
+                    guid = "e4db94ed-9244-492a-9f88-bdee5ed616fd",
+                    createTime = 0,
+                    editTime = 0,
+                    top = false,
+                    name = "TestImport",
+                    code = "@import(\"CrazyThursday\")\r\n\nUnityEngine.Debug.LogError(\"[CodeExecutor] V Me 50\");",
+                    mode = "C#"
+                },
+            };
         }
 
         private static UserData s_UserData;

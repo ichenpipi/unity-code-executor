@@ -25,9 +25,9 @@
 
 内置的示例：
 
-- C#: [CodeExecutorInjectorCSharp.cs](Editor/Scripts/Examples/CodeExecutorInjectorCSharp.cs)、[InjectHelperCSharp.cs](Editor/Scripts/Examples/InjectHelperCSharp.cs)
-- xLua (Standalone): [CodeExecutorInjectorXLua.cs](Editor/Scripts/Examples/CodeExecutorInjectorXLua.cs)、[InjectHelperXLua.cs](Editor/Scripts/Examples/InjectHelperXLua.cs)
-- xLua (Custom): [CodeExecutorInjectorXLuaCustom.cs](Editor/Scripts/Examples/CodeExecutorInjectorXLuaCustom.cs)
+- C#: [InjectorCSharp.cs](Editor/Scripts/Examples/CSharp/InjectorCSharp.cs)、[ExecutionHelperCSharp.cs](Editor/Scripts/Examples/CSharp/ExecutionHelperCSharp.cs)
+- xLua (Standalone): [InjectorXLua.cs](Editor/Scripts/Examples/XLua/InjectorXLua.cs)、[ExecutionHelperXLua.cs](Editor/Scripts/Examples/XLua/ExecutionHelperXLua.cs)
+- xLua (Custom): [InjectorXLuaCustom.cs](Editor/Scripts/Examples/XLua/InjectorXLuaCustom.cs)
 
 内置的执行模式默认开启，你可以在窗口的菜单中禁用它们。
 
@@ -157,6 +157,38 @@ public static class Example
 - 键盘按下 Ctrl+V 组合键，将会尝试解析系统剪贴板中的内容，并将有效的代码段保存到代码段列表中
 
 你可以通过这种方式来快速地在不同的 Unity 编辑器间交换代码段。
+
+### 引用代码段
+
+为了方便复用已有代码段，代码编辑器支持一种简易的导入语法。
+
+只需在代码中添加 `@import("代码段名称")` 语句，插件就会在执行代码前先使用目标代码段的代码文本替换对应的导入语句，再调用对应执行模式的执行函数。
+
+下面举个例子~
+
+当前我们拥有一个名为「CrazyThursday」的代码段，其代码文本为：
+
+```csharp
+UnityEngine.Debug.LogError("[CodeExecutor] Crazy Thursday");
+```
+
+然后我们在其他代码中使用导入语法来导入「CrazyThursday」代码段：
+
+```csharp
+@import("CrazyThursday")
+UnityEngine.Debug.LogError("[CodeExecutor] V Me 50");
+```
+
+这段代码在执行前会被解析为：
+
+```csharp
+UnityEngine.Debug.LogError("[CodeExecutor] Crazy Thursday");
+UnityEngine.Debug.LogError("[CodeExecutor] V Me 50");
+```
+
+同时该导入语法支持嵌套。
+
+但是！请注意不要循环引用！！！
 
 ### 快捷键
 

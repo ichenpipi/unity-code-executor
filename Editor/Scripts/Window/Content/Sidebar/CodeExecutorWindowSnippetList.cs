@@ -321,7 +321,7 @@ namespace ChenPipi.CodeExecutor.Editor
         {
             if (listItem.userData == null) return;
             SnippetInfo snippetInfo = listItem.userData;
-            ExecuteCode(snippetInfo.code, snippetInfo.mode);
+            ExecuteCode(snippetInfo.name, snippetInfo.code, snippetInfo.mode);
         }
 
         /// <summary>
@@ -471,7 +471,7 @@ namespace ChenPipi.CodeExecutor.Editor
                 case ListItemMenuItemName.Execute:
                 {
                     SnippetInfo snippetInfo = listItem.userData;
-                    ExecuteCode(snippetInfo.code, snippetInfo.mode);
+                    ExecuteCode(snippetInfo.name, snippetInfo.code, snippetInfo.mode);
                     break;
                 }
                 case ListItemMenuItemName.Edit:

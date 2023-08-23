@@ -85,7 +85,7 @@ namespace ChenPipi.CodeExecutor.Editor
         /// </summary>
         /// <param name="content"></param>
         /// <param name="fadeoutWait"></param>
-        public static bool ShowNotification(string content, double fadeoutWait = 1f)
+        public static bool ShowNotification(string content, double fadeoutWait = 1d)
         {
             if (!CodeExecutorWindow.HasOpenInstances())
             {

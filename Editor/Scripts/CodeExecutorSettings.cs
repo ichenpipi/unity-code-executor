@@ -18,7 +18,7 @@ namespace ChenPipi.CodeExecutor.Editor
             public int fontSize = 12;
             public bool enableBuiltinExecModeCSharp = true;
             public bool enableBuiltinExecModeXLua = true;
-            public bool enableBuiltinExecModeXLuaCustom = true;
+            public bool enableBuiltinExecModeXLuaCustom = false;
         }
 
         private static Settings s_Settings;

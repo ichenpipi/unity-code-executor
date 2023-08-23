@@ -13,14 +13,9 @@ namespace ChenPipi.CodeExecutor.Editor
 
         public void AddItemsToMenu(GenericMenu menu)
         {
-            menu.AddItem(new GUIContent("Built-in Execution Mode/C#"), CodeExecutorSettings.enableBuiltinExecModeCSharp, Menu_EnableBuiltinExecutionModeCSharp);
-            menu.AddItem(new GUIContent("Built-in Execution Mode/XLua (Standalone)"), CodeExecutorSettings.enableBuiltinExecModeXLua, Menu_EnableBuiltinExecutionModeXLua);
-            menu.AddItem(
-                new GUIContent("Built-in Execution Mode/XLua (Custom)"),
-                (CodeExecutorSettings.enableBuiltinExecModeXLua && CodeExecutorSettings.enableBuiltinExecModeXLuaCustom),
-                Menu_EnableBuiltinExecutionModeXLuaCustom
-            );
-            menu.AddItem(new GUIContent("Document: How to register execution mode?"), false, Menu_Document);
+            menu.AddItem(new GUIContent("Built-in Execution Mode/C#"), enableBuiltinExecModeCSharp, Menu_BuiltinExecutionModeCSharp);
+            menu.AddItem(new GUIContent("Built-in Execution Mode/XLua (Standalone)"), enableBuiltinExecModeXLua, Menu_BuiltinExecutionModeXLua);
+            menu.AddItem(new GUIContent("Document: How to register execution modes?"), false, Menu_Document);
             menu.AddSeparator(string.Empty);
             menu.AddItem(new GUIContent("Reload"), false, Menu_Reload);
             menu.AddItem(new GUIContent("Show Serialized Data File"), false, Menu_ShowSerializedDataFile);
@@ -34,26 +29,39 @@ namespace ChenPipi.CodeExecutor.Editor
             menu.AddItem(new GUIContent("About/Project Home Page (Gitee)"), false, Menu_ProjectHomePageGitee);
         }
 
-        private void Menu_EnableBuiltinExecutionModeCSharp()
+        public static void ReRegisterExecModes()
         {
-            CodeExecutorSettings.enableBuiltinExecModeCSharp = !CodeExecutorSettings.enableBuiltinExecModeCSharp;
             UnityEditor.Compilation.CompilationPipeline.RequestScriptCompilation();
         }
 
-        private void Menu_EnableBuiltinExecutionModeXLua()
+        public static bool enableBuiltinExecModeCSharp
         {
-            CodeExecutorSettings.enableBuiltinExecModeXLua = !CodeExecutorSettings.enableBuiltinExecModeXLua;
-            UnityEditor.Compilation.CompilationPipeline.RequestScriptCompilation();
-        }
-
-        private void Menu_EnableBuiltinExecutionModeXLuaCustom()
-        {
-            if (!CodeExecutorSettings.enableBuiltinExecModeXLua)
+            get => CodeExecutorSettings.enableBuiltinExecModeCSharp;
+            set
             {
-                return;
+                CodeExecutorSettings.enableBuiltinExecModeCSharp = value;
+                ReRegisterExecModes();
             }
-            CodeExecutorSettings.enableBuiltinExecModeXLuaCustom = !CodeExecutorSettings.enableBuiltinExecModeXLuaCustom;
-            UnityEditor.Compilation.CompilationPipeline.RequestScriptCompilation();
+        }
+
+        public static bool enableBuiltinExecModeXLua
+        {
+            get => CodeExecutorSettings.enableBuiltinExecModeXLua;
+            set
+            {
+                CodeExecutorSettings.enableBuiltinExecModeXLua = value;
+                ReRegisterExecModes();
+            }
+        }
+
+        private void Menu_BuiltinExecutionModeCSharp()
+        {
+            enableBuiltinExecModeCSharp = !enableBuiltinExecModeCSharp;
+        }
+
+        private void Menu_BuiltinExecutionModeXLua()
+        {
+            enableBuiltinExecModeXLua = !enableBuiltinExecModeXLua;
         }
 
         private void Menu_Document()
@@ -63,10 +71,14 @@ namespace ChenPipi.CodeExecutor.Editor
 
         private void Menu_Reload()
         {
+            // 加载
             CodeExecutorManager.ReloadData();
             CodeExecutorManager.ReloadSettings();
+            // 应用
             ApplySettings();
             UpdateContent();
+            // 刷新注册模式
+            ReRegisterExecModes();
         }
 
         private void Menu_ShowSerializedDataFile()

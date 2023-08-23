@@ -7,15 +7,15 @@ namespace ChenPipi.CodeExecutor.Examples
 {
 
     /// <summary>
-    /// 给 CodeExecutor 注入 XLua 代码执行模式
+    /// 给 CodeExecutor 注入代码执行模式
     /// </summary>
-    public static class CodeExecutorInjectorXLua
+    public static class InjectorXLua
     {
 
         /// <summary>
         /// XLua 所在的程序集名称，置空则使用默认程序集 "Assembly-CSharp"
         /// </summary>
-        private const string k_XLuaAssemblyName = "Assembly-CSharp";
+        public const string XLuaAssemblyName = "Assembly-CSharp";
 
         /// <summary>
         /// 注册 CodeExecutor 执行模式
@@ -28,21 +28,21 @@ namespace ChenPipi.CodeExecutor.Examples
                 return;
             }
             // 初始化 xLua Helper
-            InjectHelperXLua.Init(k_XLuaAssemblyName);
-            // 注册
-            if (InjectHelperXLua.isReady)
+            if (!ExecutionHelperXLua.isReady && !ExecutionHelperXLua.Init(XLuaAssemblyName))
             {
-                CodeExecutorManager.RegisterExecMode(new ExecutionMode
-                {
-                    name = "XLua (Standalone)",
-                    executor = Executor,
-                });
+                return;
             }
+            // 注册
+            CodeExecutorManager.RegisterExecMode(new ExecutionMode
+            {
+                name = "xLua (Standalone)",
+                executor = Executor,
+            });
         }
 
         public static object[] Executor(string code)
         {
-            object[] results = InjectHelperXLua.ExecuteCode(code);
+            object[] results = ExecutionHelperXLua.ExecuteCode(code);
 
             CodeExecutorManager.ShowNotification("Executed");
 

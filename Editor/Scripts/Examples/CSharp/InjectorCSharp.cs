@@ -7,9 +7,9 @@ namespace ChenPipi.CodeExecutor.Examples
 {
 
     /// <summary>
-    /// 给 CodeExecutor 注入 C# 代码执行模式
+    /// 给 CodeExecutor 注入代码执行模式
     /// </summary>
-    public static class CodeExecutorInjectorCSharp
+    public static class InjectorCSharp
     {
 
         /// <summary>
@@ -31,7 +31,7 @@ namespace ChenPipi.CodeExecutor.Examples
 
         public static object[] Executor(string code)
         {
-            object[] results = InjectHelperCSharp.ExecuteSnippetCode(code);
+            object[] results = ExecutionHelperCSharp.ExecuteSnippetCode(code);
 
             CodeExecutorManager.ShowNotification("Executed");
 

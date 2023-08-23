@@ -9,9 +9,9 @@ namespace ChenPipi.CodeExecutor.Examples
 {
 
     /// <summary>
-    ///  CodeExecutor XLua 注入工具
+    ///  CodeExecutor xLua 执行工具
     /// </summary>
-    public static class InjectHelperXLua
+    public static class ExecutionHelperXLua
     {
 
         /// <summary>
@@ -20,10 +20,10 @@ namespace ChenPipi.CodeExecutor.Examples
         public const string DefaultAssemblyName = "Assembly-CSharp";
 
         /// <summary>
-        /// 初始化 XLua 环境
+        /// 初始化 xLua 环境
         /// </summary>
         /// <param name="assemblyName">XLua 所在的程序集名称</param>
-        public static void Init(string assemblyName = DefaultAssemblyName)
+        public static bool Init(string assemblyName = DefaultAssemblyName)
         {
             try
             {
@@ -33,6 +33,7 @@ namespace ChenPipi.CodeExecutor.Examples
                 {
                     s_LuaEnvType = assembly.GetType("XLua.LuaEnv", true);
                     s_LuaTableType = assembly.GetType("XLua.LuaTable", true);
+                    return true;
                 }
             }
             catch (Exception e)
@@ -44,6 +45,8 @@ namespace ChenPipi.CodeExecutor.Examples
             {
                 Debug.LogError("[CodeExecutor] Unable to reach 'XLua', make sure you specify the correct assembly name!");
             }
+
+            return false;
         }
 
         /// <summary>

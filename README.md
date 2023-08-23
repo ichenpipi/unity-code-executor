@@ -27,15 +27,15 @@ You can dynamically register (inject) execution modes for any programming langua
 
 Built-in execution mode examples:
 
-- C#: [CodeExecutorInjectorCSharp.cs](Editor/Scripts/Examples/CodeExecutorInjectorCSharp.cs), [InjectHelperCSharp.cs](Editor/Scripts/Examples/InjectHelperCSharp.cs)
-- xLua (Standalone): [CodeExecutorInjectorXLua.cs](Editor/Scripts/Examples/CodeExecutorInjectorXLua.cs), [InjectHelperXLua.cs](Editor/Scripts/Examples/InjectHelperXLua.cs)
-- xLua (Custom): [CodeExecutorInjectorXLuaCustom.cs](Editor/Scripts/Examples/CodeExecutorInjectorXLuaCustom.cs)
+- C#: [InjectorCSharp.cs](Editor/Scripts/Examples/CSharp/InjectorCSharp.cs), [ExecutionHelperCSharp.cs](Editor/Scripts/Examples/CSharp/ExecutionHelperCSharp.cs)
+- xLua (Standalone): [InjectorXLua.cs](Editor/Scripts/Examples/XLua/InjectorXLua.cs), [ExecutionHelperXLua.cs](Editor/Scripts/Examples/XLua/ExecutionHelperXLua.cs)
+- xLua (Custom): [InjectorXLuaCustom.cs](Editor/Scripts/Examples/XLua/InjectorXLuaCustom.cs)
 
 The built-in execution modes are enabled by default, you can disable them in the window's menu.
 
 ![Built-in Execution Modes](Screenshots~/window-menu-builtin-exec-mode.png)
 
-### How to register execution mode
+### How to register execution modes
 
 The project provides a `CodeExecutorRegistration` attribute to register execution modes, which has the ability to control the order of registration.
 
@@ -159,6 +159,38 @@ Right-click on any item in the snippet list will display a menu with the followi
 - Press **Ctrl+V**, the program will try to parse the content from the system clipboard, and all valid snippets will be saved to the snippet list.
 
 By this way, you can quickly swap snippets between different Unity editors.
+
+### Reference Snippets
+
+To make it easier to reuse existing code snippets, the code editor supports a simple import syntax.
+
+Simply add the `@import("SnippetName")` statement to the code, and the plugin will replace the corresponding import statement with the code text of the target snippet before executing the code.
+
+Here is a example~
+
+Currently, we have a snippet called "CrazyThursday" with the following code text:
+
+```csharp
+UnityEngine.Debug.LogError("[CodeExecutor] Crazy Thursday");
+```
+
+Then we import the "CrazyThursday" snippet in other code using the import syntax:
+
+```csharp
+@import("CrazyThursday")
+UnityEngine.Debug.LogError("[CodeExecutor] V Me 50");
+```
+
+the code will be parsed as:
+
+```csharp
+UnityEngine.Debug.LogError("[CodeExecutor] Crazy Thursday");
+UnityEngine.Debug.LogError("[CodeExecutor] V Me 50");
+```
+
+The import syntax also supports nesting.
+
+But! Be careful! Circular references will destroy the world!
 
 ### Shortcut keys
 

@@ -87,7 +87,7 @@ namespace ChenPipi.CodeExecutor.Editor
         /// </summary>
         private void OnExecuteButtonClick()
         {
-            ExecuteCode(m_CurrSnippetInfo.code, m_CurrSnippetInfo.mode);
+            ExecuteCode(m_CurrSnippetInfo.name, m_CurrSnippetInfo.code, m_CurrSnippetInfo.mode);
         }
 
         /// <summary>
@@ -99,9 +99,10 @@ namespace ChenPipi.CodeExecutor.Editor
         /// <summary>
         /// 执行代码
         /// </summary>
+        /// <param name="snippetName"></param>
         /// <param name="codeText"></param>
         /// <param name="modeName"></param>
-        private void ExecuteCode(string codeText, string modeName)
+        private void ExecuteCode(string snippetName, string codeText, string modeName)
         {
             if (modeName.Equals(CodeExecutorManager.DefaultExecMode.name, StringComparison.OrdinalIgnoreCase))
             {
@@ -119,7 +120,7 @@ namespace ChenPipi.CodeExecutor.Editor
             {
                 codeText += Environment.NewLine;
             }
-            codeText = ParseCode(codeText);
+            codeText = ParseCode(snippetName, codeText);
 
             CodeExecutorManager.ExecuteCode(codeText, modeName);
         }
@@ -127,10 +128,10 @@ namespace ChenPipi.CodeExecutor.Editor
         /// <summary>
         /// 解析代码
         /// </summary>
+        /// <param name="snippetName"></param>
         /// <param name="codeText"></param>
-        /// <param name="modeName"></param>
         /// <returns></returns>
-        private string ParseCode(string codeText, string modeName = null)
+        private string ParseCode(string snippetName, string codeText)
         {
             if (string.IsNullOrEmpty(codeText))
             {
@@ -146,14 +147,20 @@ namespace ChenPipi.CodeExecutor.Editor
                     return string.Empty;
                 }
 
-                SnippetInfo snippetInfo = CodeExecutorData.GetSnippetWithName(importName, modeName);
+                if (importName.Equals(snippetName, StringComparison.OrdinalIgnoreCase))
+                {
+                    Debug.LogError($"[CodeExecutor] Cannot import snippet itself!");
+                    return string.Empty;
+                }
+
+                SnippetInfo snippetInfo = CodeExecutorData.GetSnippetWithName(importName);
                 if (snippetInfo == null)
                 {
                     Debug.LogError($"[CodeExecutor] Failed to import snippet named '{importName}'!");
                     return string.Empty;
                 }
 
-                string importCode = ParseCode(snippetInfo.code, modeName);
+                string importCode = ParseCode(snippetName, snippetInfo.code);
                 if (!importCode.EndsWith(Environment.NewLine))
                 {
                     importCode += Environment.NewLine;
@@ -161,12 +168,6 @@ namespace ChenPipi.CodeExecutor.Editor
 
                 return importCode;
             });
-
-            MatchCollection matches = Regex.Matches(codeText, importPattern);
-            foreach (Match match in matches)
-            {
-                string importName = match.Groups[1].Value;
-            }
 
             return result;
         }

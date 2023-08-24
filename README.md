@@ -71,7 +71,7 @@ public static class Example
 
 After successful registration, the name of the mode will appear in the drop-down list of the Execution Mode menu at the top right of the Code Executor window, and can be used to execute code snippets.
 
-![image-001.png](Screenshots~/image-001.png)
+![Execution Modes](Screenshots~/execution-modes.png)
 
 #### Register by reflection
 

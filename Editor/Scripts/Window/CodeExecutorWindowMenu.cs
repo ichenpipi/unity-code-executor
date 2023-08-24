@@ -13,8 +13,8 @@ namespace ChenPipi.CodeExecutor.Editor
 
         public void AddItemsToMenu(GenericMenu menu)
         {
-            menu.AddItem(new GUIContent("Built-in Execution Mode/C#"), enableBuiltinExecModeCSharp, Menu_BuiltinExecutionModeCSharp);
-            menu.AddItem(new GUIContent("Built-in Execution Mode/XLua (Standalone)"), enableBuiltinExecModeXLua, Menu_BuiltinExecutionModeXLua);
+            menu.AddItem(new GUIContent("Built-in Execution Mode/C#"), CodeExecutorManager.enableBuiltinExecModeCSharp, Menu_BuiltinExecutionModeCSharp);
+            menu.AddItem(new GUIContent("Built-in Execution Mode/XLua (Standalone)"), CodeExecutorManager.enableBuiltinExecModeXLua, Menu_BuiltinExecutionModeXLua);
             menu.AddItem(new GUIContent("Document: How to register execution modes?"), false, Menu_Document);
             menu.AddSeparator(string.Empty);
             menu.AddItem(new GUIContent("Reload"), false, Menu_Reload);
@@ -29,39 +29,14 @@ namespace ChenPipi.CodeExecutor.Editor
             menu.AddItem(new GUIContent("About/Project Home Page (Gitee)"), false, Menu_ProjectHomePageGitee);
         }
 
-        public static void ReRegisterExecModes()
-        {
-            UnityEditor.Compilation.CompilationPipeline.RequestScriptCompilation();
-        }
-
-        public static bool enableBuiltinExecModeCSharp
-        {
-            get => CodeExecutorSettings.enableBuiltinExecModeCSharp;
-            set
-            {
-                CodeExecutorSettings.enableBuiltinExecModeCSharp = value;
-                ReRegisterExecModes();
-            }
-        }
-
-        public static bool enableBuiltinExecModeXLua
-        {
-            get => CodeExecutorSettings.enableBuiltinExecModeXLua;
-            set
-            {
-                CodeExecutorSettings.enableBuiltinExecModeXLua = value;
-                ReRegisterExecModes();
-            }
-        }
-
         private void Menu_BuiltinExecutionModeCSharp()
         {
-            enableBuiltinExecModeCSharp = !enableBuiltinExecModeCSharp;
+            CodeExecutorManager.enableBuiltinExecModeCSharp = !CodeExecutorManager.enableBuiltinExecModeCSharp;
         }
 
         private void Menu_BuiltinExecutionModeXLua()
         {
-            enableBuiltinExecModeXLua = !enableBuiltinExecModeXLua;
+            CodeExecutorManager.enableBuiltinExecModeXLua = !CodeExecutorManager.enableBuiltinExecModeXLua;
         }
 
         private void Menu_Document()
@@ -78,7 +53,7 @@ namespace ChenPipi.CodeExecutor.Editor
             ApplySettings();
             UpdateContent();
             // 刷新注册模式
-            ReRegisterExecModes();
+            CodeExecutorManager.ReRegisterExecModes();
         }
 
         private void Menu_ShowSerializedDataFile()

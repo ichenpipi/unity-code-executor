@@ -50,6 +50,9 @@ namespace ChenPipi.CodeExecutor.Editor
 
         #region Macro
 
+        // /// <summary>
+        // /// 设置插件宏
+        // /// </summary>
         // [InitializeOnLoadMethod]
         // public static void SetupMacro()
         // {
@@ -66,6 +69,10 @@ namespace ChenPipi.CodeExecutor.Editor
 
         #region Window
 
+        /// <summary>
+        /// 打开窗口
+        /// </summary>
+        /// <param name="forceReopen"></param>
         public static void Open(bool forceReopen = false)
         {
             if (!forceReopen && CodeExecutorWindow.HasOpenInstances())
@@ -244,7 +251,7 @@ namespace ChenPipi.CodeExecutor.Editor
 
         #endregion
 
-        #region Update Snippet
+        #region Data Operation Snippet
 
         /// <summary>
         /// 代码段名称非法字符
@@ -385,19 +392,19 @@ namespace ChenPipi.CodeExecutor.Editor
             string modeName = mode.name;
             if (string.IsNullOrEmpty(modeName))
             {
-                Debug.LogError($"[CodeExecutor] Cannot register execution mode without a name!");
+                Debug.LogError($"[CodeExecutor] Cannot register execution mode without a name!\n");
                 return;
             }
 
             if (modeName.Equals(DefaultExecMode.name, StringComparison.OrdinalIgnoreCase))
             {
-                Debug.LogError($"[CodeExecutor] Cannot register execution mode with name '{modeName}'!");
+                Debug.LogError($"[CodeExecutor] Cannot register execution mode with name '{modeName}'!\n");
                 return;
             }
 
             if (ExecutionModes.ContainsKey(modeName))
             {
-                Debug.LogError($"[CodeExecutor] A Execution mode named '{modeName}' is already registered!");
+                Debug.LogError($"[CodeExecutor] A Execution mode named '{modeName}' is already registered!\n");
                 return;
             }
 
@@ -461,6 +468,41 @@ namespace ChenPipi.CodeExecutor.Editor
             return mode;
         }
 
+        /// <summary>
+        /// 重新注册所有执行模式
+        /// </summary>
+        public static void ReRegisterExecModes()
+        {
+            ExecutionModes.Clear();
+            UnityEditor.Compilation.CompilationPipeline.RequestScriptCompilation();
+        }
+
+        /// <summary>
+        /// 启用内置的执行模式 C#
+        /// </summary>
+        public static bool enableBuiltinExecModeCSharp
+        {
+            get => CodeExecutorSettings.enableBuiltinExecModeCSharp;
+            set
+            {
+                CodeExecutorSettings.enableBuiltinExecModeCSharp = value;
+                ReRegisterExecModes();
+            }
+        }
+
+        /// <summary>
+        /// 启用内置的执行模式 xLua
+        /// </summary>
+        public static bool enableBuiltinExecModeXLua
+        {
+            get => CodeExecutorSettings.enableBuiltinExecModeXLua;
+            set
+            {
+                CodeExecutorSettings.enableBuiltinExecModeXLua = value;
+                ReRegisterExecModes();
+            }
+        }
+
         #endregion
 
         #region Execution
@@ -475,13 +517,13 @@ namespace ChenPipi.CodeExecutor.Editor
         {
             if (!ExecutionModes.TryGetValue(modeName, out ExecutionMode mode))
             {
-                Debug.LogError($"[CodeExecutor] No execution mode named '{modeName}' was found!");
+                Debug.LogError($"[CodeExecutor] No execution mode named '{modeName}' was found!\n");
                 return null;
             }
 
             if (mode.executor == null)
             {
-                Debug.LogError($"[CodeExecutor] Invalid executor for execution mode '{modeName}'!");
+                Debug.LogError($"[CodeExecutor] Invalid executor for execution mode '{modeName}'!\n");
                 return null;
             }
 

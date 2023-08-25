@@ -9,16 +9,6 @@ namespace ChenPipi.CodeExecutor.Editor
 {
 
     /// <summary>
-    /// 执行模式
-    /// </summary>
-    public struct ExecutionMode
-    {
-        public string name;
-        public string desc;
-        public Func<string, object[]> executor;
-    }
-
-    /// <summary>
     /// 管理器
     /// </summary>
     public static class CodeExecutorManager
@@ -150,7 +140,7 @@ namespace ChenPipi.CodeExecutor.Editor
 
         #endregion
 
-        #region Data Operation
+        #region Data: Snippets
 
         /// <summary>
         /// 设置执行模式
@@ -251,7 +241,7 @@ namespace ChenPipi.CodeExecutor.Editor
 
         #endregion
 
-        #region Data Operation Snippet
+        #region Data: Snippet Info
 
         /// <summary>
         /// 代码段名称非法字符
@@ -575,6 +565,29 @@ namespace ChenPipi.CodeExecutor.Editor
         }
 
         #endregion
+
+    }
+
+    /// <summary>
+    /// 执行模式
+    /// </summary>
+    public struct ExecutionMode
+    {
+
+        /// <summary>
+        /// 名称
+        /// </summary>
+        public string name;
+
+        /// <summary>
+        /// 描述
+        /// </summary>
+        public string desc;
+
+        /// <summary>
+        /// 执行函数
+        /// </summary>
+        public Func<string, object[]> executor;
 
     }
 

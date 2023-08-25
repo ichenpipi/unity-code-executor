@@ -181,7 +181,7 @@ Then we import the "CrazyThursday" snippet in other code using the import syntax
 UnityEngine.Debug.LogError("[CodeExecutor] V Me 50");
 ```
 
-the code will be parsed as:
+The code will be parsed as:
 
 ```csharp
 UnityEngine.Debug.LogError("[CodeExecutor] Crazy Thursday");

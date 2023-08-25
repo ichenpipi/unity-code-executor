@@ -137,11 +137,28 @@ namespace ChenPipi.CodeExecutor.Editor
             {
                 return codeText;
             }
+            // 处理导入
+            return ProcessImport(snippetName, codeText);
+        }
 
-            const string importPattern = @"@import\s*[(]?[""']([^""']+)[""']\)?";
-            string result = Regex.Replace(codeText, importPattern, match =>
+        #region Syntax: Import
+
+        /// <summary>
+        /// 导入语法模板
+        /// </summary>
+        private const string k_ImportSyntaxPattern = "@import\\s*\\(?[\"\']([^\"\']+)[\"\']\\)?";
+
+        /// <summary>
+        /// 处理导入
+        /// </summary>
+        /// <param name="snippetName"></param>
+        /// <param name="codeText"></param>
+        /// <returns></returns>
+        private string ProcessImport(string snippetName, string codeText)
+        {
+            string result = Regex.Replace(codeText, k_ImportSyntaxPattern, match =>
             {
-                string importName = match.Groups[1].Value;
+                string importName = match.Groups[1].Value.Trim();
                 if (string.IsNullOrWhiteSpace(importName))
                 {
                     return string.Empty;
@@ -171,6 +188,8 @@ namespace ChenPipi.CodeExecutor.Editor
 
             return result;
         }
+
+        #endregion
 
     }
 

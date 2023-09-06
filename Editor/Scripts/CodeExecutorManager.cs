@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
@@ -124,10 +125,11 @@ namespace ChenPipi.CodeExecutor.Editor
         /// <summary>
         /// 重新加载数据
         /// </summary>
-        public static void ReloadData()
+        /// <param name="notify"></param>
+        public static void ReloadData(bool notify)
         {
             CodeExecutorData.Reload();
-            NotifyOfDataUpdated();
+            if (notify) NotifyOfDataUpdated();
         }
 
         /// <summary>
@@ -136,6 +138,49 @@ namespace ChenPipi.CodeExecutor.Editor
         private static void NotifyOfDataUpdated()
         {
             dataUpdated?.Invoke();
+        }
+
+        #endregion
+
+        #region Data: Categories
+
+        /// <summary>
+        /// 添加类别
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="notify"></param>
+        public static void AddCategory(string name, bool notify = true)
+        {
+            // 更新数据
+            CodeExecutorData.AddCategory(name);
+            // 保存到本地并通知更新
+            SaveData(notify);
+        }
+
+        /// <summary>
+        /// 移除类别
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="notify"></param>
+        public static void RemoveCategory(string name, bool notify = true)
+        {
+            // 更新数据
+            CodeExecutorData.RemoveCategory(name);
+            // 保存到本地并通知更新
+            SaveData(notify);
+        }
+
+        /// <summary>
+        /// 移除类别
+        /// </summary>
+        /// <param name="originalName"></param>
+        /// <param name="newName"></param>
+        public static void RenameCategory(string originalName, string newName)
+        {
+            // 更新数据
+            CodeExecutorData.RenameCategory(originalName, newName);
+            // 保存到本地并通知更新
+            SaveData(true);
         }
 
         #endregion
@@ -172,15 +217,16 @@ namespace ChenPipi.CodeExecutor.Editor
         /// <param name="code">代码文本</param>
         /// <param name="name">代码段名称</param>
         /// <param name="mode">执行模式名称</param>
-        /// <param name="notify">通知</param>
+        /// <param name="category">类别</param>
+        /// <param name="notify">通知更新</param>
         /// <returns></returns>
-        public static SnippetInfo AddSnippet(string code, string name = null, string mode = null, bool notify = true)
+        public static SnippetInfo AddSnippet(string code, string name = null, string mode = null, string category = null, bool notify = true)
         {
-            // 新增数据
-            SnippetInfo snippetInfo = CodeExecutorData.AddSnippet(code, name, mode);
+            // 更新数据
+            SnippetInfo snippet = CodeExecutorData.AddSnippet(code, name, mode, category);
             // 保存到本地并通知更新
             SaveData(notify);
-            return snippetInfo;
+            return snippet;
         }
 
         /// <summary>
@@ -189,27 +235,18 @@ namespace ChenPipi.CodeExecutor.Editor
         /// <param name="source">源数据</param>
         /// <param name="notify">通知</param>
         /// <returns></returns>
-        public static List<SnippetInfo> CloneSnippets(SnippetInfo[] source, bool notify = true)
+        public static IEnumerable<SnippetInfo> CloneSnippets(IEnumerable<SnippetInfo> source, bool notify = true)
         {
             List<SnippetInfo> list = new List<SnippetInfo>();
-            for (int i = 0; i < source.Length; i++)
+            SnippetInfo[] array = source as SnippetInfo[] ?? source.ToArray();
+            for (int i = 0; i < array.Length; i++)
             {
-                SnippetInfo snippetInfo = source[i];
-                string name = GetNonDuplicateName(snippetInfo.name);
-                bool needNotify = notify && (i == source.Length - 1);
-                list.Add(AddSnippet(snippetInfo.code, name, snippetInfo.mode, needNotify));
+                SnippetInfo snippet = array[i];
+                string name = GetNonDuplicateSnippetName(snippet.name);
+                bool needNotify = notify && (i == array.Length - 1);
+                list.Add(AddSnippet(snippet.code, name, snippet.mode, snippet.category, needNotify));
             }
             return list;
-        }
-
-        /// <summary>
-        /// 获取代码段
-        /// </summary>
-        /// <param name="guid">GUID</param>
-        /// <returns></returns>
-        public static SnippetInfo GetSnippet(string guid)
-        {
-            return CodeExecutorData.GetSnippet(guid);
         }
 
         /// <summary>
@@ -218,7 +255,7 @@ namespace ChenPipi.CodeExecutor.Editor
         /// <param name="guid">GUID</param>
         public static void RemoveSnippet(string guid)
         {
-            // 移除数据
+            // 更新数据
             CodeExecutorData.RemoveSnippet(guid);
             // 保存到本地并通知更新
             SaveData(true);
@@ -228,9 +265,9 @@ namespace ChenPipi.CodeExecutor.Editor
         /// 移除代码段
         /// </summary>
         /// <param name="guids">GUID</param>
-        public static void RemoveSnippets(string[] guids)
+        public static void RemoveSnippets(IEnumerable<string> guids)
         {
-            // 移除数据
+            // 更新数据
             foreach (string guid in guids)
             {
                 CodeExecutorData.RemoveSnippet(guid);
@@ -256,8 +293,8 @@ namespace ChenPipi.CodeExecutor.Editor
         /// <returns></returns>
         public static bool SetSnippetName(string guid, string name)
         {
-            SnippetInfo snippetInfo = CodeExecutorData.GetSnippet(guid);
-            if (snippetInfo == null)
+            SnippetInfo snippet = CodeExecutorData.GetSnippet(guid);
+            if (snippet == null)
             {
                 return false;
             }
@@ -274,7 +311,7 @@ namespace ChenPipi.CodeExecutor.Editor
             }
 
             // 更新数据
-            snippetInfo.name = name;
+            snippet.name = name;
             // 保存到本地并通知更新
             SaveData(true);
             return true;
@@ -288,11 +325,11 @@ namespace ChenPipi.CodeExecutor.Editor
         /// <returns></returns>
         public static void SetSnippetCode(string guid, string code)
         {
-            SnippetInfo snippetInfo = CodeExecutorData.GetSnippet(guid);
-            if (snippetInfo == null) return;
+            SnippetInfo snippet = CodeExecutorData.GetSnippet(guid);
+            if (snippet == null) return;
             // 更新数据
-            snippetInfo.code = code;
-            snippetInfo.editTime = PipiUtility.GetTimestamp();
+            snippet.code = code;
+            snippet.editTime = PipiUtility.GetTimestamp();
             // 保存到本地并通知更新
             SaveData(false);
         }
@@ -305,10 +342,10 @@ namespace ChenPipi.CodeExecutor.Editor
         /// </summary>
         public static void SetSnippetTop(string guid, bool top, bool notify = true)
         {
-            SnippetInfo snippetInfo = CodeExecutorData.GetSnippet(guid);
-            if (snippetInfo == null) return;
-            // 移除数据
-            snippetInfo.top = top;
+            SnippetInfo snippet = CodeExecutorData.GetSnippet(guid);
+            if (snippet == null) return;
+            // 更新数据
+            snippet.top = top;
             // 保存到本地并通知更新
             SaveData(notify);
         }
@@ -321,12 +358,101 @@ namespace ChenPipi.CodeExecutor.Editor
         /// <returns></returns>
         public static void SetSnippetExecMode(string guid, string mode)
         {
-            SnippetInfo snippetInfo = CodeExecutorData.GetSnippet(guid);
-            if (snippetInfo == null) return;
+            SnippetInfo snippet = CodeExecutorData.GetSnippet(guid);
+            if (snippet == null) return;
             // 更新数据
-            snippetInfo.mode = mode;
+            snippet.mode = mode;
             // 保存到本地并通知更新
             SaveData(false);
+        }
+
+        /// <summary>
+        /// 设置代码段类别
+        /// <param name="guid"></param>
+        /// <param name="category"></param>
+        /// <param name="notify"></param>
+        /// </summary>
+        public static void SetSnippetCategory(string guid, string category, bool notify = true)
+        {
+            SnippetInfo snippet = CodeExecutorData.GetSnippet(guid);
+            if (snippet == null) return;
+            // 更新数据
+            if (!string.IsNullOrEmpty(category) && !CodeExecutorData.HasCategory(category))
+            {
+                CodeExecutorData.AddCategory(category);
+            }
+            snippet.category = category;
+            // 保存到本地并通知更新
+            SaveData(notify);
+        }
+
+        #endregion
+
+        #region Naming
+
+        /// <summary>
+        /// 命名格式分隔符
+        /// </summary>
+        internal const int NameMaxLength = 30;
+
+        /// <summary>
+        /// 命名格式分隔符
+        /// </summary>
+        internal const string NamingSchemeSeparator = "_";
+
+        /// <summary>
+        /// 命名格式正则
+        /// </summary>
+        internal static readonly Regex NamingSchemeRegex = new Regex($"^(.*?){NamingSchemeSeparator}(\\d+)$");
+
+        /// <summary>
+        /// 获取不重复的代码段名称
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        internal static string GetNonDuplicateSnippetName(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                name = "Unnamed";
+            }
+
+            name = name.Substring(0, Mathf.Min(name.Length, NameMaxLength));
+
+            Match match = NamingSchemeRegex.Match(name);
+            string baseName = (!match.Success ? name : match.Groups[1].Value);
+            int.TryParse(match.Groups[2].Value, out int count);
+            while (CodeExecutorData.HasSnippetWithName(name))
+            {
+                name = $"{baseName}{NamingSchemeSeparator}{++count}";
+            }
+
+            return name;
+        }
+
+        /// <summary>
+        /// 获取不重复的类别名称
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        internal static string GetNonDuplicateCategoryName(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                name = "Unnamed";
+            }
+
+            name = name.Substring(0, Mathf.Min(name.Length, NameMaxLength));
+
+            Match match = NamingSchemeRegex.Match(name);
+            string baseName = (!match.Success ? name : match.Groups[1].Value);
+            int.TryParse(match.Groups[2].Value, out int count);
+            while (CodeExecutorData.HasCategory(name))
+            {
+                name = $"{baseName}{NamingSchemeSeparator}{++count}";
+            }
+
+            return name;
         }
 
         #endregion
@@ -518,50 +644,6 @@ namespace ChenPipi.CodeExecutor.Editor
             }
 
             return mode.executor.Invoke(codeText);
-        }
-
-        #endregion
-
-        #region Naming
-
-        /// <summary>
-        /// 命名格式分隔符
-        /// </summary>
-        internal const int NameMaxLength = 30;
-
-        /// <summary>
-        /// 命名格式分隔符
-        /// </summary>
-        internal const string NamingSchemeSeparator = "_";
-
-        /// <summary>
-        /// 命名格式正则
-        /// </summary>
-        internal static readonly Regex NamingSchemeRegex = new Regex($"^(.*?){NamingSchemeSeparator}(\\d+)$");
-
-        /// <summary>
-        /// 获取不重复的名称
-        /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        internal static string GetNonDuplicateName(string name)
-        {
-            if (string.IsNullOrEmpty(name))
-            {
-                name = "Unnamed";
-            }
-
-            name = name.Substring(0, Mathf.Min(name.Length, NameMaxLength));
-
-            Match match = NamingSchemeRegex.Match(name);
-            string baseName = (!match.Success ? name : match.Groups[1].Value);
-            int.TryParse(match.Groups[2].Value, out int count);
-            while (CodeExecutorData.HasSnippetWithName(name))
-            {
-                name = $"{baseName}{NamingSchemeSeparator}{++count}";
-            }
-
-            return name;
         }
 
         #endregion

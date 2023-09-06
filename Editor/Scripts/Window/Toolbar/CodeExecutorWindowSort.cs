@@ -148,7 +148,7 @@ namespace ChenPipi.CodeExecutor.Editor
         /// <summary>
         /// 基础排序函数
         /// </summary>
-        private static readonly Comparison<SnippetInfo> s_BaseSortingComparer = (a, b) =>
+        private static readonly Comparison<SnippetInfo> s_SnippetBaseSortingComparer = (a, b) =>
         {
             int ap = SortingPriority.Base;
             int bp = SortingPriority.Base;
@@ -162,53 +162,48 @@ namespace ChenPipi.CodeExecutor.Editor
         /// <summary>
         /// 排序函数
         /// </summary>
-        private static readonly Dictionary<Sorting, Comparison<SnippetInfo>> s_SortingComparers = new Dictionary<Sorting, Comparison<SnippetInfo>>()
+        private static readonly Dictionary<Sorting, Comparison<SnippetInfo>> s_SnippetSortingComparers = new Dictionary<Sorting, Comparison<SnippetInfo>>()
         {
             {
                 Sorting.NameUp, (a, b) =>
                 {
-                    int baseSorting = s_BaseSortingComparer(a, b);
-                    return baseSorting != 0 ? baseSorting : string.Compare(a.name, b.name, StringComparison.InvariantCultureIgnoreCase);
+                    int baseSorting = s_SnippetBaseSortingComparer(a, b);
+                    return (baseSorting != 0 ? baseSorting : string.Compare(a.name, b.name, StringComparison.InvariantCultureIgnoreCase));
                 }
             },
             {
                 Sorting.NameDown, (a, b) =>
                 {
-                    int baseSorting = s_BaseSortingComparer(a, b);
-                    if (baseSorting != 0) return baseSorting;
-                    return (-string.Compare(a.name, b.name, StringComparison.InvariantCultureIgnoreCase));
+                    int baseSorting = s_SnippetBaseSortingComparer(a, b);
+                    return (baseSorting != 0 ? baseSorting : (-string.Compare(a.name, b.name, StringComparison.InvariantCultureIgnoreCase)));
                 }
             },
             {
                 Sorting.CreateTimeUp, (a, b) =>
                 {
-                    int baseSorting = s_BaseSortingComparer(a, b);
-                    if (baseSorting != 0) return baseSorting;
-                    return a.createTime.CompareTo(b.createTime);
+                    int baseSorting = s_SnippetBaseSortingComparer(a, b);
+                    return (baseSorting != 0 ? baseSorting : a.createTime.CompareTo(b.createTime));
                 }
             },
             {
                 Sorting.CreateTimeDown, (a, b) =>
                 {
-                    int baseSorting = s_BaseSortingComparer(a, b);
-                    if (baseSorting != 0) return baseSorting;
-                    return (-a.createTime.CompareTo(b.createTime));
+                    int baseSorting = s_SnippetBaseSortingComparer(a, b);
+                    return (baseSorting != 0 ? baseSorting : (-a.createTime.CompareTo(b.createTime)));
                 }
             },
             {
                 Sorting.EditTimeUp, (a, b) =>
                 {
-                    int baseSorting = s_BaseSortingComparer(a, b);
-                    if (baseSorting != 0) return baseSorting;
-                    return a.editTime.CompareTo(b.editTime);
+                    int baseSorting = s_SnippetBaseSortingComparer(a, b);
+                    return baseSorting != 0 ? baseSorting : a.editTime.CompareTo(b.editTime);
                 }
             },
             {
                 Sorting.EditTimeDown, (a, b) =>
                 {
-                    int baseSorting = s_BaseSortingComparer(a, b);
-                    if (baseSorting != 0) return baseSorting;
-                    return (-a.editTime.CompareTo(b.editTime));
+                    int baseSorting = s_SnippetBaseSortingComparer(a, b);
+                    return baseSorting != 0 ? baseSorting : (-a.editTime.CompareTo(b.editTime));
                 }
             },
         };
@@ -216,10 +211,21 @@ namespace ChenPipi.CodeExecutor.Editor
         /// <summary>
         /// 排序
         /// </summary>
-        /// <param name="list"></param>
-        private void Sort(ref List<SnippetInfo> list)
+        /// <param name="snippets"></param>
+        private void Sort(ref List<SnippetInfo> snippets)
         {
-            list.Sort(s_SortingComparers[m_Sorting]);
+            snippets.Sort(s_SnippetSortingComparers[m_Sorting]);
+        }
+
+        /// <summary>
+        /// 排序
+        /// </summary>
+        /// <param name="snippets"></param>
+        /// <param name="categories"></param>
+        private void Sort(ref List<SnippetInfo> snippets, ref List<string> categories)
+        {
+            snippets.Sort(s_SnippetSortingComparers[m_Sorting]);
+            categories.Sort();
         }
 
         /// <summary>

@@ -87,7 +87,7 @@ namespace ChenPipi.CodeExecutor.Editor
         /// </summary>
         private void OnExecuteButtonClick()
         {
-            ExecuteCode(m_CurrSnippetInfo.name, m_CurrSnippetInfo.code, m_CurrSnippetInfo.mode);
+            ExecuteSnippet(m_CurrSnippetInfo.name, m_CurrSnippetInfo.code, m_CurrSnippetInfo.mode);
         }
 
         /// <summary>
@@ -97,12 +97,12 @@ namespace ChenPipi.CodeExecutor.Editor
         private void OnDetailGeometryChangedEventChanged(GeometryChangedEvent evt) { }
 
         /// <summary>
-        /// 执行代码
+        /// 执行代码段
         /// </summary>
         /// <param name="snippetName"></param>
         /// <param name="codeText"></param>
         /// <param name="modeName"></param>
-        private void ExecuteCode(string snippetName, string codeText, string modeName)
+        private void ExecuteSnippet(string snippetName, string codeText, string modeName)
         {
             if (modeName.Equals(CodeExecutorManager.DefaultExecMode.name, StringComparison.OrdinalIgnoreCase))
             {
@@ -170,14 +170,14 @@ namespace ChenPipi.CodeExecutor.Editor
                     return string.Empty;
                 }
 
-                SnippetInfo snippetInfo = CodeExecutorData.GetSnippetWithName(importName);
-                if (snippetInfo == null)
+                SnippetInfo snippet = CodeExecutorData.GetSnippetWithName(importName);
+                if (snippet == null)
                 {
                     Debug.LogError($"[CodeExecutor] Failed to import snippet named '{importName}'!");
                     return string.Empty;
                 }
 
-                string importCode = ParseCode(snippetName, snippetInfo.code);
+                string importCode = ParseCode(snippetName, snippet.code);
                 if (!importCode.EndsWith(Environment.NewLine))
                 {
                     importCode += Environment.NewLine;
@@ -185,6 +185,12 @@ namespace ChenPipi.CodeExecutor.Editor
 
                 return importCode;
             });
+
+            MatchCollection matches = Regex.Matches(codeText, k_ImportSyntaxPattern);
+            foreach (Match match in matches)
+            {
+                string importName = match.Groups[1].Value;
+            }
 
             return result;
         }

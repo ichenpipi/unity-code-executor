@@ -1,4 +1,5 @@
 using System.IO;
+using System.Text;
 using UnityEditor;
 using UnityEngine;
 
@@ -20,6 +21,8 @@ namespace ChenPipi.CodeExecutor.Editor
             menu.AddItem(new GUIContent("Reload"), false, Menu_Reload);
             menu.AddItem(new GUIContent("Show Serialized Data File"), false, Menu_ShowSerializedDataFile);
             menu.AddItem(new GUIContent("Show Serialized Settings File"), false, Menu_ShowSerializedSettingsFile);
+            menu.AddSeparator(string.Empty);
+            menu.AddItem(new GUIContent("Import From File"), false, Menu_ImportFromFile);
             menu.AddSeparator(string.Empty);
             menu.AddItem(new GUIContent("Clear Data ⚠️"), false, Menu_ClearData);
             menu.AddItem(new GUIContent("Reset Settings ⚠️"), false, Menu_ResetSettings);
@@ -46,12 +49,8 @@ namespace ChenPipi.CodeExecutor.Editor
 
         private void Menu_Reload()
         {
-            // 加载
-            CodeExecutorManager.ReloadData();
-            CodeExecutorManager.ReloadSettings();
-            // 应用
-            ApplySettings();
-            UpdateContent();
+            // 重新加载数据和设置
+            Reload();
             // 刷新注册模式
             CodeExecutorManager.ReRegisterExecModes();
         }
@@ -82,6 +81,24 @@ namespace ChenPipi.CodeExecutor.Editor
                 return;
             }
             EditorUtility.RevealInFinder(CodeExecutorSettings.SerializedFilePath);
+        }
+
+        /// <summary>
+        /// 导入
+        /// </summary>
+        private void Menu_ImportFromFile()
+        {
+            const string title = "Import code from file";
+            const string extension = "";
+            string directory = Application.dataPath;
+            string path = EditorUtility.OpenFilePanel(title, directory, extension);
+            if (string.IsNullOrEmpty(path))
+            {
+                return;
+            }
+            string fileText = File.ReadAllText(path, Encoding.UTF8);
+            string fileName = new FileInfo(path).Name;
+            CodeExecutorManager.AddSnippet(fileText, fileName);
         }
 
         private void Menu_ClearData()

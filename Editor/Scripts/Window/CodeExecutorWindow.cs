@@ -1,5 +1,5 @@
-using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -115,12 +115,6 @@ namespace ChenPipi.CodeExecutor.Editor
 
         #region Lifecycle
 
-        private void Awake()
-        {
-            CodeExecutorData.Reload();
-            CodeExecutorSettings.Reload();
-        }
-
         private void OnEnable()
         {
             CodeExecutorManager.execModeUpdated += Repaint;
@@ -153,11 +147,21 @@ namespace ChenPipi.CodeExecutor.Editor
             // 监听快捷键
             RegisterHotkeys();
 
-            // 刷新数据
-            RefreshData();
-
             // 应用设置
             ApplySettings();
+            // 更新内容
+            UpdateContent();
+        }
+
+        private void Reload()
+        {
+            // 加载
+            CodeExecutorManager.ReloadData(false);
+            CodeExecutorManager.ReloadSettings();
+            // 应用设置
+            ApplySettings();
+            // 更新内容
+            UpdateContent();
         }
 
         #region Data
@@ -167,7 +171,7 @@ namespace ChenPipi.CodeExecutor.Editor
         /// </summary>
         private void RefreshData()
         {
-            if (!IsContentInited()) return;
+            if (!IsContentReady()) return;
 
             // 更新内容
             UpdateContent();
@@ -179,7 +183,7 @@ namespace ChenPipi.CodeExecutor.Editor
 
         private void ApplySettings()
         {
-            if (!IsContentInited()) return;
+            if (!IsContentReady()) return;
 
             // 代码段列表
             ApplySettings_ShowSnippets();
@@ -189,14 +193,14 @@ namespace ChenPipi.CodeExecutor.Editor
 
         private void ApplySettings_ShowSnippets()
         {
-            if (!IsContentInited()) return;
+            if (!IsContentReady()) return;
 
             ToggleSidebar(CodeExecutorSettings.showSnippets);
         }
 
         private void ApplySettings_DragLine()
         {
-            if (!IsContentInited()) return;
+            if (!IsContentReady()) return;
 
             float rootWidth = rootVisualElement.worldBound.width;
             float leftPaneMinWidth = m_Sidebar.style.minWidth.value.value;
@@ -218,7 +222,7 @@ namespace ChenPipi.CodeExecutor.Editor
 
         private void ApplySettings_CodeEditor()
         {
-            if (!IsContentInited()) return;
+            if (!IsContentReady()) return;
 
             SetCodeEditorFontSize(CodeExecutorSettings.fontSize);
         }
@@ -227,20 +231,42 @@ namespace ChenPipi.CodeExecutor.Editor
 
         #region Clipboard
 
+        private void DoCopyToClipboard()
+        {
+            if (TrySaveSelectedSnippetsToClipboard())
+            {
+                // 提示
+                ShowNotification("Saved to clipboard");
+            }
+        }
+
+        private void DoPasteFromClipboard()
+        {
+            List<SnippetInfo> snippets = TryAddSnippetsFromClipboard();
+            if (snippets?.Count > 0)
+            {
+                string[] guids = snippets.Select(v => v.guid).ToArray();
+                Switch(guids.First());
+                SetSnippetTreeViewSelection(guids, false);
+                // 提示
+                ShowNotification($"Added {snippets.Count} snippets from clipboard");
+            }
+        }
+
         /// <summary>
         /// 保存已选择的代码段到系统剪切板
         /// </summary>
         /// <returns></returns>
         private bool TrySaveSelectedSnippetsToClipboard()
         {
-            SnippetInfo[] snippetInfos = GetSelectedSnippetInfos();
-            if (snippetInfos.Length == 0)
+            List<SnippetInfo> snippets = GetSnippetTreeViewSelectedSnippets(true);
+            if (snippets.Count == 0)
             {
                 return false;
             }
 
             SnippetWrapper wrapper = new SnippetWrapper();
-            foreach (SnippetInfo info in snippetInfos)
+            foreach (SnippetInfo info in snippets)
             {
                 wrapper.snippets.Add(new SnippetInfoSimplified()
                 {
@@ -250,7 +276,7 @@ namespace ChenPipi.CodeExecutor.Editor
                 });
             }
 
-            string data = JsonUtility.ToJson(wrapper, true);
+            string data = JsonUtility.ToJson(wrapper, false);
             PipiUtility.SaveToClipboard(data);
             return true;
         }
@@ -285,9 +311,13 @@ namespace ChenPipi.CodeExecutor.Editor
                 for (int i = 0; i < wrapper.snippets.Count; i++)
                 {
                     SnippetInfoSimplified info = wrapper.snippets[i];
-                    string name = CodeExecutorManager.GetNonDuplicateName(info.name);
+                    string name = CodeExecutorManager.GetNonDuplicateSnippetName(info.name);
+                    if (!CodeExecutorData.HasCategory(info.category))
+                    {
+                        CodeExecutorManager.AddCategory(info.category, false);
+                    }
                     bool notify = (i == wrapper.snippets.Count - 1);
-                    list.Add(CodeExecutorManager.AddSnippet(info.code, name, info.mode, notify));
+                    list.Add(CodeExecutorManager.AddSnippet(info.code, name, info.mode, info.category, notify));
                 }
 
                 return list;

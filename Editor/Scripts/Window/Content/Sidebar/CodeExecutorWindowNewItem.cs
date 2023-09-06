@@ -39,12 +39,23 @@ namespace ChenPipi.CodeExecutor.Editor
             m_NewItem.SetIcon(PipiUtility.GetIcon("CreateAddNew"));
             // 点击回调
             m_NewItem.RegisterCallback<MouseDownEvent>(OnNewCodeItemMouseDown);
+            // 菜单回调
+            m_NewItem.AddManipulator(new ContextualMenuManipulator(null));
+            m_NewItem.RegisterCallback<ContextualMenuPopulateEvent>(OnNewCodeItemContextualMenuPopulate);
             m_Sidebar.Add(m_NewItem);
         }
 
-        private void OnNewCodeItemMouseDown(MouseDownEvent e)
+        private void OnNewCodeItemMouseDown(MouseDownEvent evt)
         {
             Switch(CodeExecutorData.newSnippet);
+        }
+
+        private void OnNewCodeItemContextualMenuPopulate(ContextualMenuPopulateEvent evt)
+        {
+            evt.menu.AppendAction("Create Empty Snippet", action =>
+            {
+                SaveAsNewSnippet(string.Empty);
+            });
         }
 
         private void UpdateNewCodeItemStyle(bool isSelected)

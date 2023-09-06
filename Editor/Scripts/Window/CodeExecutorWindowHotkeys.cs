@@ -30,30 +30,26 @@ namespace ChenPipi.CodeExecutor.Editor
                 // Ctrl + C
                 else if (evt.ctrlKey && evt.keyCode == KeyCode.C)
                 {
-                    TrySaveSelectedSnippetsToClipboard();
                 }
                 // Ctrl + V
                 else if (evt.ctrlKey && evt.keyCode == KeyCode.V)
                 {
-                    List<SnippetInfo> list = TryAddSnippetsFromClipboard();
-                    if (list != null && list.Count > 0)
-                    {
-                        string[] guids = list.Select(o => o.guid).ToArray();
-                        Switch(guids.First());
-                        SetSnippetListSelection(guids, false);
-                    }
                 }
                 // Ctrl + D
-                else if (evt.keyCode == KeyCode.Z) { }
+                else if (evt.keyCode == KeyCode.Z)
+                {
+                }
                 // Ctrl + Z
-                else if (evt.keyCode == KeyCode.Z) { }
+                else if (evt.keyCode == KeyCode.Z)
+                {
+                }
                 // Ctrl + Shift + Z
-                else if (evt.shiftKey && evt.keyCode == KeyCode.Z) { }
+                else if (evt.shiftKey && evt.keyCode == KeyCode.Z)
+                {
+                }
                 // F2
                 else if (evt.keyCode == KeyCode.F2)
                 {
-                    ListItem item = GetSelectedSnippetListItem();
-                    item?.ShowNameTextField();
                 }
                 // F5
                 else if (evt.keyCode == KeyCode.F5)
@@ -63,7 +59,8 @@ namespace ChenPipi.CodeExecutor.Editor
                 // Delete / Backspace
                 else if (evt.keyCode == KeyCode.Delete || evt.keyCode == KeyCode.Backspace)
                 {
-                    string[] names = GetSelectedSnippetInfos().Select(v => $"- {v.name}").ToArray();
+                    List<SnippetInfo> snippets = GetSnippetTreeViewSelectedSnippets(true);
+                    string[] names = snippets.Select(v => $"- {v.name}").ToArray();
                     bool isOk = EditorUtility.DisplayDialog(
                         "[Code Executor] Delete snippets",
                         $"Are you sure to delete the following snippets?\n{string.Join("\n", names)}",
@@ -72,7 +69,8 @@ namespace ChenPipi.CodeExecutor.Editor
                     );
                     if (isOk)
                     {
-                        CodeExecutorManager.RemoveSnippets(GetSelectedSnippetGuids());
+                        string[] guids = snippets.Select(v => v.guid).ToArray();
+                        CodeExecutorManager.RemoveSnippets(guids);
                     }
                 }
                 // 不响应

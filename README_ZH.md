@@ -129,17 +129,17 @@ public static class Example
 
 ![Rename](Screenshots~/rename.png)
 
-### 拷贝代码段
+### 复制代码段
 
-如需快速拷贝当前代码段，请点击代码编辑区域右上方 Copy 按钮。
+如需快速复制当前代码段，请点击代码编辑区域右上方 Duplicate 按钮。
 
 此操作将会生成一个与当前代码段完全相同的副本。
 
-![Copy](Screenshots~/copy.png)
+![Duplicate](Screenshots~/duplicate.png)
 
 ### 代码段菜单
 
-鼠标右键点击代码段列表中的条目将会展示菜单，包含以下选项：
+鼠标右键点击代码段列表中的**代码段**条目将会展示菜单，包含以下选项：
 
 - 执行（Execute）
 - 编辑（Edit）
@@ -148,10 +148,33 @@ public static class Example
 - 置顶（Top）
 - 取消置顶（Un-top）
 - 删除（Delete）
+- 将代码段拷贝到系统剪贴板（Copy To Clipboard）
 
 ![Snippet Menu](Screenshots~/snippet-menu.png)
 
-### 快速复制/粘贴代码段
+### 类别菜单
+
+鼠标右键点击代码段列表中的**类别**条目将会展示菜单，包含以下选项：
+
+- 重命名（Rename）
+- 删除（Delete）
+- 创建新的类别（Create New Category）
+- 将代码段拷贝到系统剪贴板（Copy To Clipboard）
+
+![Category Menu](Screenshots~/category-menu.png)
+
+### 空白处菜单
+
+鼠标右键点击代码段列表中的**空白处**将会展示菜单，包含以下选项：
+
+- 创建新的类别（Create New Category）
+- 折叠所有类别（Collapse All）
+- 展开所有类别（Expand All）
+- 从系统剪贴板粘贴代码段（Paste From Clipboard）
+
+![Context Menu](Screenshots~/context-menu.png)
+
+### 快速拷贝/粘贴代码段
 
 - 键盘按下 **Ctrl+C** 组合键，即可将当前代码段列表中选择的代码段以 Json 格式文本的方式保存到系统剪贴板
 - 键盘按下 **Ctrl+V** 组合键，将会尝试解析系统剪贴板中的内容，并将有效的代码段保存到代码段列表中
@@ -198,6 +221,7 @@ UnityEngine.Debug.LogError("[CodeExecutor] V Me 50");
 - `Delete/Backspace`: 删除代码段列表中选择的代码段
 - `Ctrl+C`: 将当前代码段列表中选择的代码段以 Json 格式文本的方式保存到系统剪贴板
 - `Ctrl+V`: 尝试解析系统剪贴板中的内容，并保存有效的代码段
+- `Ctrl+D`: 复制代码段列表中选择的代码段
 
 ## 截图/演示动画
 

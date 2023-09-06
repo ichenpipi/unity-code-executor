@@ -19,7 +19,7 @@ This plugin provides a front-end interface where you can create, edit, save, sel
 
 ### Supported programming languages
 
-Although the plugin has built-in programming language back-end examples for C# and Lua (xLua).
+Although the plugin has built-in programming language backend examples for C# and Lua (xLua).
 
 But the plugin does not impose any restrictions on the programming language backend!
 
@@ -131,17 +131,17 @@ Select any item in the snippet list, press the **F2** key to rename the snippet.
 
 ![Rename](Screenshots~/rename.png)
 
-### Copy Snippet
+### Duplicate Snippet
 
-If you want to copy the current snippet, click the **Copy** button at the top right of the code editing area.
+If you want to duplicate the current snippet, click the **Duplicate** button at the top right of the code editing area.
 
-Then you will get an exact copy of the current snippet.
+Then you will get a copy of the current snippet.
 
-![Copy](Screenshots~/copy.png)
+![Duplicate](Screenshots~/duplicate.png)
 
 ### Snippet Menu
 
-Right-click on any item in the snippet list will display a menu with the following options:
+Right-click on any **snippet** item in the snippet list will display a menu with the following options:
 
 - Execute
 - Edit
@@ -152,6 +152,28 @@ Right-click on any item in the snippet list will display a menu with the followi
 - Delete
 
 ![Snippet Menu](Screenshots~/snippet-menu.png)
+
+### Category Menu
+
+Right-click on any **category** item in the snippet list will display a menu with the following options:
+
+- Rename
+- Delete
+- Create New Category
+- Copy To Clipboard
+
+![Category Menu](Screenshots~/category-menu.png)
+
+### Context Menu
+
+Right-click on an **empty space** in the snippet list will display a menu with the following options:
+
+- Create New Category
+- Collapse All (Categories)
+- Expand All (Categories)
+- Paste From Clipboard
+
+![Context Menu](Screenshots~/context-menu.png)
 
 ### Copy/Paste Snippets
 
@@ -200,6 +222,7 @@ But! Be careful! Circular references will destroy the world!
 - `Delete/Backspace`: Delete selected snippets
 - `Ctrl+C`: save the selected snippets in the snippet list to the system clipboard as Json format text
 - `Ctrl+V`: Try parsing the content from the system clipboard, and all valid snippets will be saved to the snippet list.
+- `Ctrl+D`: Duplicate selected snippets.
 
 ## Screenshots/Animations
 

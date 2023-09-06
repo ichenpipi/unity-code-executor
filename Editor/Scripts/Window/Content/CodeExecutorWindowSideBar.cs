@@ -37,8 +37,8 @@ namespace ChenPipi.CodeExecutor.Editor
             // 分割线
             m_Sidebar.Add(GenHorizontalSeparator(0));
 
-            // 代码段列表
-            InitSnippetList();
+            // 代码段
+            InitSnippetTreeView();
         }
 
         /// <summary>

@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.0] - 2023-09-06
+
+- Support categories
+- Update project structure
+
 ## [1.0.2] - 2023-08-24
 
 - Modify APIs

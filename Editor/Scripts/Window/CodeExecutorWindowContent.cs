@@ -91,7 +91,7 @@ namespace ChenPipi.CodeExecutor.Editor
             // 详情
             InitDetail();
             // 拖放区
-            InitDropArea();
+            //InitDropArea();
         }
 
         /// <summary>
@@ -104,7 +104,7 @@ namespace ChenPipi.CodeExecutor.Editor
         /// 内容是否初始化
         /// </summary>
         /// <returns></returns>
-        private bool IsContentInited()
+        private bool IsContentReady()
         {
             return (m_Content != null);
         }
@@ -128,10 +128,10 @@ namespace ChenPipi.CodeExecutor.Editor
         /// </summary>
         private void UpdateContent()
         {
-            if (!IsContentInited()) return;
+            if (!IsContentReady()) return;
 
             // 加载代码段列表
-            UpdateSnippetList();
+            UpdateSnippetTreeView();
 
             // 恢复选中的代码段
             Switch(m_SelectedSnippetGuid);
@@ -148,41 +148,41 @@ namespace ChenPipi.CodeExecutor.Editor
                 Switch(CodeExecutorData.newSnippet);
                 return;
             }
-            SnippetInfo snippetInfo = CodeExecutorManager.GetSnippet(guid);
-            if (snippetInfo == null)
+            SnippetInfo snippet = CodeExecutorData.GetSnippet(guid);
+            if (snippet == null)
             {
                 Switch(CodeExecutorData.newSnippet);
                 return;
             }
-            Switch(snippetInfo);
+            Switch(snippet);
         }
 
         /// <summary>
         /// 切换
         /// </summary>
-        /// <param name="snippetInfo"></param>
-        private void Switch(SnippetInfo snippetInfo)
+        /// <param name="snippet"></param>
+        private void Switch(SnippetInfo snippet)
         {
-            if (snippetInfo == null) return;
+            if (snippet == null) return;
 
             // 是否为新代码条目
-            bool isNew = IsNewSnippet(snippetInfo);
+            bool isNew = IsNewSnippet(snippet);
 
             // 保存引用
-            m_CurrSnippetInfo = snippetInfo;
+            m_CurrSnippetInfo = snippet;
             // 记录选择
-            m_SelectedSnippetGuid = isNew ? null : snippetInfo.guid;
+            m_SelectedSnippetGuid = isNew ? null : snippet.guid;
 
             // 更新界面状态
             UpdateNewCodeItemStyle(isNew);
             // 更新列表状态
             if (isNew)
             {
-                ClearSnippetListSelection(false);
+                ClearSnippetTreeViewSelection(false);
             }
             else
             {
-                SetSnippetListSelection(m_SelectedSnippetGuid, false);
+                SetSnippetTreeViewSelection(m_SelectedSnippetGuid, false);
             }
 
             // 设置标题
@@ -192,12 +192,12 @@ namespace ChenPipi.CodeExecutor.Editor
             }
             else
             {
-                SetTitleText(snippetInfo.name);
+                SetTitleText(snippet.name);
             }
             // 设置代码
-            SetCodeEditorText(snippetInfo.code);
+            SetCodeEditorText(snippet.code);
             // 设置执行模式
-            SetExecutionModeText(snippetInfo.mode);
+            SetExecutionModeText(snippet.mode);
             // 是否可编辑
             SetCodeEditorEditable(isNew);
             // 展示保存按钮
@@ -209,11 +209,11 @@ namespace ChenPipi.CodeExecutor.Editor
         /// <summary>
         /// 是否为新代码段条目
         /// </summary>
-        /// <param name="snippetInfo"></param>
+        /// <param name="snippet"></param>
         /// <returns></returns>
-        private bool IsNewSnippet(SnippetInfo snippetInfo)
+        private bool IsNewSnippet(SnippetInfo snippet)
         {
-            return (snippetInfo == CodeExecutorData.newSnippet);
+            return (snippet == CodeExecutorData.newSnippet);
         }
 
         #endregion

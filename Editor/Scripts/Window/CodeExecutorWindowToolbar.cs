@@ -44,8 +44,6 @@ namespace ChenPipi.CodeExecutor.Editor
             InitToolbarSortingMenu();
             // 执行模式菜单
             InitToolbarExecutionModeMenu();
-            // 导入按钮
-            InitToolBarImportButton();
 
             // 特殊处理最后一个元素的样式
             VisualElement[] elements = m_Toolbar.Children().ToArray();
@@ -68,7 +66,6 @@ namespace ChenPipi.CodeExecutor.Editor
             bool isNarrow = (m_Toolbar.localBound.width <= 180);
             m_SearchField.style.display = (isNarrow ? DisplayStyle.None : DisplayStyle.Flex);
             m_SortingMenu.style.display = (isNarrow ? DisplayStyle.None : DisplayStyle.Flex);
-            m_ImportButton.style.display = (isNarrow ? DisplayStyle.None : DisplayStyle.Flex);
         }
 
     }

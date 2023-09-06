@@ -37,9 +37,9 @@ namespace ChenPipi.CodeExecutor.Editor
         private ButtonWithIcon m_EditButton = null;
 
         /// <summary>
-        /// 拷贝按钮
+        /// 复制按钮
         /// </summary>
-        private ButtonWithIcon m_CopyButton = null;
+        private ButtonWithIcon m_DuplicateButton = null;
 
         /// <summary>
         /// 初始化
@@ -140,28 +140,27 @@ namespace ChenPipi.CodeExecutor.Editor
             // 点击回调
             m_SaveButton.clicked += OnSaveButtonClick;
 
-            // 拷贝按钮
-            m_CopyButton = new ButtonWithIcon()
+            // 复制按钮
+            m_DuplicateButton = new ButtonWithIcon()
             {
-                name = "CopyButton",
-                tooltip = "Copy as new snippet",
+                name = "DuplicateButton",
+                tooltip = "Duplicate current snippet",
                 style =
                 {
                     height = 20,
                     paddingRight = 2,
                 }
             };
-            m_HeaderButtonContainer.Add(m_CopyButton);
+            m_HeaderButtonContainer.Add(m_DuplicateButton);
             // 文本
-            m_CopyButton.SetText("Copy");
-            m_CopyButton.SetTextFontSize(11);
+            m_DuplicateButton.SetText("Duplicate");
+            m_DuplicateButton.SetTextFontSize(11);
             // 图标
-            m_CopyButton.SetIcon(PipiUtility.GetIcon("TreeEditor.Duplicate"));
-            m_CopyButton.SetIconSize(16);
-            m_CopyButton.iconImage.style.marginLeft = -1;
-            m_CopyButton.iconImage.style.marginRight = -2;
+            m_DuplicateButton.SetIcon(PipiUtility.GetIcon("TreeEditor.Duplicate"));
+            m_DuplicateButton.SetIconSize(16);
+            m_DuplicateButton.iconImage.style.marginRight = -1;
             // 点击回调
-            m_CopyButton.clicked += OnCopyButtonClick;
+            m_DuplicateButton.clicked += OnDuplicateButtonClick;
         }
 
         /// <summary>
@@ -179,23 +178,18 @@ namespace ChenPipi.CodeExecutor.Editor
         /// </summary>
         private void OnSaveButtonClick()
         {
+            // 添加新的代码段
             string code = m_CurrSnippetInfo.code;
             string mode = m_CurrSnippetInfo.mode;
-
-            // 清空新代码条目
-            // CodeExecutorManager.SetNewSnippetCode(string.Empty);
-
-            // 添加新的代码段
             SaveAsNewSnippet(code, "Unnamed", mode);
         }
 
         /// <summary>
-        /// 拷贝按钮点击回调
+        /// 复制按钮点击回调
         /// </summary>
-        private void OnCopyButtonClick()
+        private void OnDuplicateButtonClick()
         {
-            // 添加新的代码段
-            SaveAsNewSnippet(m_CurrSnippetInfo.code, m_CurrSnippetInfo.name, m_CurrSnippetInfo.mode);
+            DuplicateSnippet(m_CurrSnippetInfo);
         }
 
         /// <summary>
@@ -221,7 +215,7 @@ namespace ChenPipi.CodeExecutor.Editor
         /// <param name="isShow"></param>
         private void SetCopyButtonStatus(bool isShow)
         {
-            m_CopyButton.style.display = (isShow ? DisplayStyle.Flex : DisplayStyle.None);
+            m_DuplicateButton.style.display = (isShow ? DisplayStyle.Flex : DisplayStyle.None);
         }
 
         /// <summary>
@@ -245,30 +239,34 @@ namespace ChenPipi.CodeExecutor.Editor
         }
 
         /// <summary>
+        /// 复制代码段
+        /// </summary>
+        /// <param name="source"></param>
+        private void DuplicateSnippet(SnippetInfo source)
+        {
+            SaveAsNewSnippet(source.code, source.name, source.mode, source.category);
+        }
+
+        /// <summary>
         /// 保存为新的代码段
         /// </summary>
         /// <param name="code"></param>
         /// <param name="name"></param>
         /// <param name="mode"></param>
-        private void SaveAsNewSnippet(string code, string name = null, string mode = null)
+        /// <param name="category"></param>
+        /// <param name="triggerRename"></param>
+        private void SaveAsNewSnippet(string code, string name = null, string mode = null, string category = null, bool triggerRename = true)
         {
             // 避免重名
-            name = CodeExecutorManager.GetNonDuplicateName(name);
+            name = CodeExecutorManager.GetNonDuplicateSnippetName(name);
             // 添加新的代码段
-            SnippetInfo snippetInfo = CodeExecutorManager.AddSnippet(code, name, mode, false);
+            SnippetInfo snippet = CodeExecutorManager.AddSnippet(code, name, mode, category, false);
             // 刷新代码段列表
-            UpdateSnippetList();
+            UpdateSnippetTreeView();
             // 确保切换到新的代码段条目
-            Switch(snippetInfo.guid);
-            // 延迟执行，等待列表生成
-            EditorApplication.delayCall = () =>
-            {
-                // 确保切换到新的代码段条目
-                Switch(snippetInfo.guid);
-                // 展示条目的名称输入框
-                ListItem listItem = GetSnippetListItem(snippetInfo.guid);
-                listItem?.ShowNameTextField();
-            };
+            Switch(snippet.guid);
+            // 展示条目的名称输入框
+            if (triggerRename) BeginSnippetTreeViewItemRename(snippet.guid);
         }
 
     }

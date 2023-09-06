@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace ChenPipi.CodeExecutor.Editor
 {
@@ -17,6 +16,7 @@ namespace ChenPipi.CodeExecutor.Editor
         private class UserData
         {
             public int version = 0;
+            public List<string> categories = new List<string>();
             public SnippetInfo newSnippet = new SnippetInfo();
             public List<SnippetInfo> snippets = new List<SnippetInfo>()
             {
@@ -27,8 +27,11 @@ namespace ChenPipi.CodeExecutor.Editor
                     editTime = 0,
                     top = false,
                     name = "HelloWorld",
-                    code = "UnityEngine.Debug.Log(\"[CodeExecutor] Hello World!\");\nUnityEngine.Debug.LogWarning(\"[CodeExecutor] Hello World!\");\nUnityEngine.Debug.LogError(\"[CodeExecutor] Hello World!\");",
-                    mode = "C#"
+                    code = @"UnityEngine.Debug.Log(""[CodeExecutor] Hello World!"");
+UnityEngine.Debug.LogWarning(""[CodeExecutor] Hello World!"");
+UnityEngine.Debug.LogError(""[CodeExecutor] Hello World!"");",
+                    mode = "C#",
+                    category = null,
                 },
                 new SnippetInfo()
                 {
@@ -38,7 +41,8 @@ namespace ChenPipi.CodeExecutor.Editor
                     top = false,
                     name = "CrazyThursday",
                     code = "UnityEngine.Debug.LogError(\"[CodeExecutor] Crazy Thursday\");",
-                    mode = "C#"
+                    mode = "C#",
+                    category = "Test",
                 },
                 new SnippetInfo()
                 {
@@ -48,7 +52,8 @@ namespace ChenPipi.CodeExecutor.Editor
                     top = false,
                     name = "TestImport",
                     code = "@import(\"CrazyThursday\")\r\n\nUnityEngine.Debug.LogError(\"[CodeExecutor] V Me 50\");",
-                    mode = "C#"
+                    mode = "C#",
+                    category = "Test",
                 },
             };
         }
@@ -70,6 +75,85 @@ namespace ChenPipi.CodeExecutor.Editor
 
         #endregion
 
+        #region Categories
+
+        public static List<string> GetCategories()
+        {
+            List<string> list = new List<string>(userData.categories);
+            foreach (SnippetInfo snippet in snippets)
+            {
+                if (!string.IsNullOrEmpty(snippet.category) && !list.Contains(snippet.category))
+                {
+                    userData.categories.Add(snippet.category);
+                    list.Add(snippet.category);
+                }
+            }
+            return list;
+        }
+
+        private static List<string> categories => s_UserData.categories;
+
+        public static bool HasCategory(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                return false;
+            }
+            return categories.Contains(name);
+        }
+
+        public static void AddCategory(string name)
+        {
+            if (string.IsNullOrEmpty(name) || HasCategory(name))
+            {
+                return;
+            }
+            categories.Add(name);
+        }
+
+        public static void RemoveCategory(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                return;
+            }
+            categories.Remove(name);
+            // 更新代码段
+            foreach (SnippetInfo snippet in snippets)
+            {
+                if (name.Equals(snippet.category, StringComparison.OrdinalIgnoreCase))
+                {
+                    snippet.category = null;
+                }
+            }
+        }
+
+        public static void RenameCategory(string originalName, string newName)
+        {
+            if (string.IsNullOrEmpty(originalName))
+            {
+                return;
+            }
+            int index = categories.IndexOf(originalName);
+            if (index < 0)
+            {
+                return;
+            }
+            categories[index] = newName;
+            // 更新代码段
+            foreach (SnippetInfo snippet in snippets)
+            {
+                if (originalName.Equals(snippet.category, StringComparison.OrdinalIgnoreCase))
+                {
+                    snippet.category = newName;
+                }
+            }
+        }
+
+        #endregion
+
+        #region NewSnippet
+
         /// <summary>
         /// 新代码段
         /// </summary>
@@ -78,42 +162,49 @@ namespace ChenPipi.CodeExecutor.Editor
             get => userData.newSnippet;
         }
 
+        #endregion
+
         #region Snippets
 
-        public static List<SnippetInfo> snippets => userData.snippets;
+        #region Snippets Mapping
 
         private static readonly Dictionary<string, SnippetInfo> s_GuidMap = new Dictionary<string, SnippetInfo>();
 
         private static void GenerateMapping()
         {
             s_GuidMap.Clear();
-            foreach (SnippetInfo snippetInfo in snippets)
+            foreach (SnippetInfo snippet in snippets)
             {
-                s_GuidMap.Add(snippetInfo.guid, snippetInfo);
+                s_GuidMap.Add(snippet.guid, snippet);
             }
         }
 
+        #endregion
+
+        public static List<SnippetInfo> GetSnippets()
+        {
+            return snippets;
+        }
+
+        private static List<SnippetInfo> snippets => userData.snippets;
+
         public static SnippetInfo GetSnippet(string guid)
         {
-            if (string.IsNullOrEmpty(guid))
+            if (!string.IsNullOrEmpty(guid) && s_GuidMap.TryGetValue(guid, out SnippetInfo snippet))
             {
-                return null;
-            }
-            if (s_GuidMap.TryGetValue(guid, out SnippetInfo snippetInfo))
-            {
-                return snippetInfo;
+                return snippet;
             }
             return null;
         }
 
-        public static SnippetInfo AddSnippet(string code, string name = null, string mode = null)
+        public static SnippetInfo AddSnippet(string code, string name = null, string mode = null, string category = null)
         {
             if (string.IsNullOrEmpty(name))
             {
                 name = "Unnamed";
             }
             long time = PipiUtility.GetTimestamp();
-            SnippetInfo snippetInfo = new SnippetInfo()
+            SnippetInfo snippet = new SnippetInfo()
             {
                 guid = PipiUtility.NewGuid(),
                 createTime = time,
@@ -121,33 +212,26 @@ namespace ChenPipi.CodeExecutor.Editor
                 code = code,
                 name = name,
                 mode = mode,
+                category = category,
             };
-            snippets.Add(snippetInfo);
-            s_GuidMap.Add(snippetInfo.guid, snippetInfo);
-            return snippetInfo;
+            snippets.Add(snippet);
+            s_GuidMap.Add(snippet.guid, snippet);
+            return snippet;
         }
 
         public static void RemoveSnippet(string guid)
         {
-            if (string.IsNullOrEmpty(guid))
-            {
-                return;
-            }
-            if (!s_GuidMap.TryGetValue(guid, out SnippetInfo snippetInfo))
+            if (string.IsNullOrEmpty(guid) || !s_GuidMap.TryGetValue(guid, out SnippetInfo snippet))
             {
                 return;
             }
             s_GuidMap.Remove(guid);
-            snippets.Remove(snippetInfo);
+            snippets.Remove(snippet);
         }
 
         public static bool HasSnippet(string guid)
         {
-            if (string.IsNullOrEmpty(guid))
-            {
-                return false;
-            }
-            return s_GuidMap.ContainsKey(guid);
+            return (!string.IsNullOrEmpty(guid) && s_GuidMap.ContainsKey(guid));
         }
 
         public static SnippetInfo GetSnippetWithName(string name, string mode = null)
@@ -169,6 +253,19 @@ namespace ChenPipi.CodeExecutor.Editor
         public static bool HasSnippetWithName(string name)
         {
             return (GetSnippetWithName(name) != null);
+        }
+
+        public static List<SnippetInfo> GetSnippetsWithCategory(string category)
+        {
+            List<SnippetInfo> list = new List<SnippetInfo>();
+            foreach (SnippetInfo snippet in snippets)
+            {
+                if (snippet.MatchCategory(category))
+                {
+                    list.Add(snippet);
+                }
+            }
+            return list;
         }
 
         #endregion
@@ -230,7 +327,7 @@ namespace ChenPipi.CodeExecutor.Editor
 
     }
 
-    #region ItemInfo
+    #region Type Definition
 
     /// <summary>
     /// 条目信息
@@ -238,30 +335,26 @@ namespace ChenPipi.CodeExecutor.Editor
     [Serializable]
     public class SnippetInfo
     {
-
-        public string guid = string.Empty;
+        public string guid = null;
         public long createTime = 0;
         public long editTime = 0;
         public bool top = false;
-        public string name = string.Empty;
-        public string code = string.Empty;
-        public string mode = string.Empty;
+        public string name = null;
+        public string code = null;
+        public string mode = null;
+        public string category = null;
 
-        public bool MatchGuid(string guid)
-        {
-            return this.guid.Equals(guid, StringComparison.OrdinalIgnoreCase);
-        }
+        public bool MatchGuid(string guid) => (this.guid != null && this.guid.Equals(guid, StringComparison.OrdinalIgnoreCase));
 
-        public bool MatchName(string name)
-        {
-            return this.name.Equals(name, StringComparison.OrdinalIgnoreCase);
-        }
+        public bool MatchName(string name) => (this.name != null && this.name.Equals(name, StringComparison.OrdinalIgnoreCase));
 
-        public bool MatchMode(string mode)
-        {
-            return this.mode.Equals(mode, StringComparison.OrdinalIgnoreCase);
-        }
+        public bool MatchMode(string mode) => (this.mode != null && this.mode.Equals(mode, StringComparison.OrdinalIgnoreCase));
 
+        public bool MatchCategory(string category) =>
+        (
+            (string.IsNullOrEmpty(this.category) && string.IsNullOrEmpty(category)) ||
+            (this.category != null && this.category.Equals(category, StringComparison.OrdinalIgnoreCase))
+        );
     }
 
     [Serializable]
@@ -273,9 +366,10 @@ namespace ChenPipi.CodeExecutor.Editor
     [Serializable]
     public class SnippetInfoSimplified
     {
-        public string name = string.Empty;
-        public string code = string.Empty;
-        public string mode = string.Empty;
+        public string name = null;
+        public string code = null;
+        public string mode = null;
+        public string category = null;
     }
 
     #endregion

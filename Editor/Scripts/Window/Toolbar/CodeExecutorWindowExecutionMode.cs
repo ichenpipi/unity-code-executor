@@ -31,7 +31,7 @@ namespace ChenPipi.CodeExecutor.Editor
                 style =
                 {
                     flexShrink = 0,
-                    width = 185,
+                    width = 205,
                     paddingTop = 0,
                     paddingBottom = 0,
                     paddingLeft = 4,

@@ -40,14 +40,7 @@ namespace ChenPipi.CodeExecutor.Editor
             // 值变化回调
             m_SearchField.RegisterValueChangedCallback(OnSearchFieldValueChanged);
             // 监听键盘事件
-            m_SearchField.RegisterCallback<KeyDownEvent>((evt) =>
-            {
-                // ↑ || ↓
-                if (evt.keyCode == KeyCode.UpArrow || evt.keyCode == KeyCode.DownArrow)
-                {
-                    FocusToSnippetList();
-                }
-            });
+            m_SearchField.RegisterCallback<KeyDownEvent>(OnSearchFieldKeyDown);
         }
 
         /// <summary>
@@ -57,6 +50,20 @@ namespace ChenPipi.CodeExecutor.Editor
         private void OnSearchFieldValueChanged(ChangeEvent<string> evt)
         {
             SetSearchText(evt.newValue);
+        }
+
+        /// <summary>
+        /// 搜索栏按键回调
+        /// </summary>
+        /// <param name="evt"></param>
+        private void OnSearchFieldKeyDown(KeyDownEvent evt)
+        {
+            // ↑ || ↓
+            if (evt.keyCode == KeyCode.UpArrow || evt.keyCode == KeyCode.DownArrow)
+            {
+                m_SearchField.Blur();
+                FocusToSnippetTreeView();
+            }
         }
 
         #region SearchField
@@ -92,9 +99,9 @@ namespace ChenPipi.CodeExecutor.Editor
         /// <summary>
         /// 过滤
         /// </summary>
-        /// <param name="list"></param>
+        /// <param name="snippets"></param>
         /// <returns></returns>
-        private void Filter(ref List<SnippetInfo> list)
+        private void Filter(ref List<SnippetInfo> snippets)
         {
             // 移除空格
             string text = m_SearchText.Trim();
@@ -104,7 +111,44 @@ namespace ChenPipi.CodeExecutor.Editor
             {
                 string pattern = text.Trim().ToCharArray().Join(".*");
                 Regex regex = new Regex(pattern, RegexOptions.IgnoreCase);
-                list = list.FindAll(v => regex.Match(v.name).Success);
+                snippets = snippets.FindAll(v => regex.Match(v.name).Success);
+            }
+        }
+
+        /// <summary>
+        /// 过滤
+        /// </summary>
+        /// <param name="snippets"></param>
+        /// <param name="categories"></param>
+        /// <returns></returns>
+        private void Filter(ref List<SnippetInfo> snippets, ref List<string> categories)
+        {
+            // 移除空格
+            string text = m_SearchText.Trim();
+
+            // 匹配名称
+            if (!string.IsNullOrWhiteSpace(text))
+            {
+                string pattern = text.Trim().ToCharArray().Join(".*");
+                Regex regex = new Regex(pattern, RegexOptions.IgnoreCase);
+                List<SnippetInfo> newSnippetInfos = new List<SnippetInfo>();
+                List<string> newCategories = new List<string>();
+                foreach (SnippetInfo snippet in snippets)
+                {
+                    if (!regex.Match(snippet.name).Success)
+                    {
+                        continue;
+                    }
+                    // 有效的代码段
+                    newSnippetInfos.Add(snippet);
+                    // 有效的类别
+                    if (categories.Contains(snippet.category) && !newCategories.Contains(snippet.category))
+                    {
+                        newCategories.Add(snippet.category);
+                    }
+                }
+                snippets = newSnippetInfos;
+                categories = newCategories;
             }
         }
 

@@ -370,6 +370,16 @@ UnityEngine.Debug.LogError(""[CodeExecutor] Hello World!"");",
         public string code = null;
         public string mode = null;
         public string category = null;
+
+        public SnippetInfoSimplified() { }
+
+        public SnippetInfoSimplified(SnippetInfo snippet)
+        {
+            name = snippet.name;
+            code = snippet.code;
+            mode = snippet.mode;
+            category = snippet.category;
+        }
     }
 
     #endregion

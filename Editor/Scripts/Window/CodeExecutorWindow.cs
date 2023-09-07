@@ -254,7 +254,7 @@ namespace ChenPipi.CodeExecutor.Editor
         }
 
         /// <summary>
-        /// 保存已选择的代码段到系统剪切板
+        /// 保存已选择的代码段到系统剪贴板
         /// </summary>
         /// <returns></returns>
         private bool TrySaveSelectedSnippetsToClipboard()
@@ -264,25 +264,27 @@ namespace ChenPipi.CodeExecutor.Editor
             {
                 return false;
             }
-
-            SnippetWrapper wrapper = new SnippetWrapper();
-            foreach (SnippetInfo info in snippets)
-            {
-                wrapper.snippets.Add(new SnippetInfoSimplified()
-                {
-                    name = info.name,
-                    code = info.code,
-                    mode = info.mode,
-                });
-            }
-
-            string data = JsonUtility.ToJson(wrapper, false);
-            PipiUtility.SaveToClipboard(data);
+            SaveSnippetsToClipboard(snippets);
             return true;
         }
 
         /// <summary>
-        /// 从系统剪切板中读取并添加代码段
+        /// 保存代码段到系统剪贴板
+        /// </summary>
+        /// <param name="snippets"></param>
+        private void SaveSnippetsToClipboard(List<SnippetInfo> snippets)
+        {
+            SnippetWrapper wrapper = new SnippetWrapper();
+            foreach (SnippetInfo snippet in snippets)
+            {
+                wrapper.snippets.Add(new SnippetInfoSimplified(snippet));
+            }
+            string data = JsonUtility.ToJson(wrapper, false);
+            PipiUtility.SaveToClipboard(data);
+        }
+
+        /// <summary>
+        /// 从系统剪贴板中读取并添加代码段
         /// </summary>
         /// <returns></returns>
         private List<SnippetInfo> TryAddSnippetsFromClipboard()

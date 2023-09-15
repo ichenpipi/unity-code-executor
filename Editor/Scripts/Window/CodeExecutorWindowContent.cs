@@ -119,9 +119,14 @@ namespace ChenPipi.CodeExecutor.Editor
         private SnippetInfo m_CurrSnippetInfo = null;
 
         /// <summary>
-        /// 当前选中
+        /// 当前选中代码段
         /// </summary>
         private string m_SelectedSnippetGuid = null;
+
+        /// <summary>
+        /// 当前选中类别
+        /// </summary>
+        private string m_SelectedCategory = null;
 
         /// <summary>
         /// 更新内容
@@ -175,14 +180,23 @@ namespace ChenPipi.CodeExecutor.Editor
 
             // 更新界面状态
             UpdateNewCodeItemStyle(isNew);
+
             // 更新列表状态
-            if (isNew)
+            if (string.IsNullOrEmpty(m_SelectedCategory))
             {
-                ClearSnippetTreeViewSelection(false);
+                if (isNew)
+                {
+                    ClearSnippetTreeViewSelection(false);
+                }
+                else
+                {
+                    SetSnippetTreeViewSelection(m_SelectedSnippetGuid, false);
+                }
             }
             else
             {
-                SetSnippetTreeViewSelection(m_SelectedSnippetGuid, false);
+                int itemID = GetSnippetTreeViewItemIdByCategory(m_SelectedCategory);
+                if (itemID >= 0) SetSnippetTreeViewSelection(itemID, false);
             }
 
             // 设置标题

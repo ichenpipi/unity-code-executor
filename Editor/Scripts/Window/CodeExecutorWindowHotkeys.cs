@@ -28,51 +28,24 @@ namespace ChenPipi.CodeExecutor.Editor
                     FocusToSearchField();
                 }
                 // Ctrl + C
-                else if (evt.ctrlKey && evt.keyCode == KeyCode.C)
-                {
-                }
+                else if (evt.ctrlKey && evt.keyCode == KeyCode.C) { }
                 // Ctrl + V
-                else if (evt.ctrlKey && evt.keyCode == KeyCode.V)
-                {
-                }
+                else if (evt.ctrlKey && evt.keyCode == KeyCode.V) { }
                 // Ctrl + D
-                else if (evt.keyCode == KeyCode.Z)
-                {
-                }
+                else if (evt.keyCode == KeyCode.D) { }
                 // Ctrl + Z
-                else if (evt.keyCode == KeyCode.Z)
-                {
-                }
+                else if (evt.keyCode == KeyCode.Z) { }
                 // Ctrl + Shift + Z
-                else if (evt.shiftKey && evt.keyCode == KeyCode.Z)
-                {
-                }
+                else if (evt.shiftKey && evt.keyCode == KeyCode.Z) { }
                 // F2
-                else if (evt.keyCode == KeyCode.F2)
-                {
-                }
+                else if (evt.keyCode == KeyCode.F2) { }
                 // F5
                 else if (evt.keyCode == KeyCode.F5)
                 {
-                    Menu_Reload();
+                    Reload();
                 }
                 // Delete / Backspace
-                else if (evt.keyCode == KeyCode.Delete || evt.keyCode == KeyCode.Backspace)
-                {
-                    List<SnippetInfo> snippets = GetSnippetTreeViewSelectedSnippets(true);
-                    string[] names = snippets.Select(v => $"- {v.name}").ToArray();
-                    bool isOk = EditorUtility.DisplayDialog(
-                        "[Code Executor] Delete snippets",
-                        $"Are you sure to delete the following snippets?\n{string.Join("\n", names)}",
-                        "Confirm!",
-                        "Cancel"
-                    );
-                    if (isOk)
-                    {
-                        string[] guids = snippets.Select(v => v.guid).ToArray();
-                        CodeExecutorManager.RemoveSnippets(guids);
-                    }
-                }
+                else if (evt.keyCode == KeyCode.Delete || evt.keyCode == KeyCode.Backspace) { }
                 // 不响应
                 else
                 {

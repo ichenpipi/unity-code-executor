@@ -13,7 +13,7 @@
         "runtime",
         "dynamic"
     ],
-    "description": "",
+    "description": "A front-end interface where you can create, edit, save and dynamically execute code snippets.",
     "author": {
         "name": "ChenPipi",
         "email": "952157129@qq.com",

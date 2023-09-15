@@ -303,7 +303,7 @@ namespace ChenPipi.CodeExecutor.Editor
             if (name.IndexOfAny(s_InvalidNameChars) != -1)
             {
                 EditorUtility.DisplayDialog(
-                    "[CodeExecutor] Invalid display name",
+                    "[Code Executor] Invalid display name",
                     $"A valid name can't contain any of the following characters: {s_InvalidNameChars.Join("")}",
                     "OK"
                 );

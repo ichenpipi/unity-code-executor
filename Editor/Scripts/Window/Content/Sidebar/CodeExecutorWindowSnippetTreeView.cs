@@ -97,6 +97,26 @@ namespace ChenPipi.CodeExecutor.Editor
             {
                 DuplicateSelectedSnippets();
             }
+            // Ctrl + Numpad -
+            else if (evt.control && evt.keyCode == KeyCode.KeypadMinus)
+            {
+                SnippetTreeViewCollapseAllCategories();
+            }
+            // Ctrl + Numpad +
+            else if (evt.control && evt.keyCode == KeyCode.KeypadPlus)
+            {
+                SnippetTreeViewExpandAllCategories();
+            }
+            // Delete / Backspace
+            else if (evt.keyCode == KeyCode.Delete || evt.keyCode == KeyCode.Backspace)
+            {
+                DeleteSelectedSnippets();
+            }
+            // F5
+            else if (evt.keyCode == KeyCode.F5)
+            {
+                Reload();
+            }
         }
 
         #endregion
@@ -122,6 +142,7 @@ namespace ChenPipi.CodeExecutor.Editor
 
             // 添加类别条目
             m_ItemId2CategoryMap.Clear();
+            m_Category2ItemIdMap.Clear();
             Dictionary<string, CustomTreeViewItem> categories = new Dictionary<string, CustomTreeViewItem>(StringComparer.OrdinalIgnoreCase);
             foreach (string category in m_Categories)
             {
@@ -140,6 +161,7 @@ namespace ChenPipi.CodeExecutor.Editor
                 categories.Add(category, item);
                 // 记录映射
                 m_ItemId2CategoryMap.Add(item.id, category);
+                m_Category2ItemIdMap.Add(category, item.id);
             }
 
             // 添加代码段条目
@@ -223,7 +245,9 @@ namespace ChenPipi.CodeExecutor.Editor
             {
                 return;
             }
-            // 切换
+            // 清除类别选择
+            m_SelectedCategory = null;
+            // 切换代码段
             SnippetInfo snippet = CodeExecutorData.GetSnippet(guids.First());
             Switch(snippet);
         }
@@ -232,7 +256,14 @@ namespace ChenPipi.CodeExecutor.Editor
 
         #region Item Click
 
-        private void OnSnippetTreeViewItemClicked(int itemID) { }
+        private void OnSnippetTreeViewItemClicked(int itemID)
+        {
+            CustomTreeViewItem item = m_SnippetTreeView.FindItem(itemID);
+            if (item.isContainer)
+            {
+                m_SelectedCategory = item.displayName;
+            }
+        }
 
         private void OnSnippetTreeViewItemDoubleClicked(int itemID)
         {
@@ -314,6 +345,8 @@ namespace ChenPipi.CodeExecutor.Editor
 
         private readonly Dictionary<int, string> m_ItemId2CategoryMap = new Dictionary<int, string>();
 
+        private readonly Dictionary<string, int> m_Category2ItemIdMap = new Dictionary<string, int>();
+
         private readonly Dictionary<int, string> m_ItemId2SnippetGuidMap = new Dictionary<int, string>();
 
         private readonly Dictionary<string, int> m_SnippetGuid2ItemIdMap = new Dictionary<string, int>();
@@ -321,6 +354,11 @@ namespace ChenPipi.CodeExecutor.Editor
         private string GetSnippetCategoryBySnippetTreeViewItemId(int itemID)
         {
             return m_ItemId2CategoryMap.TryGetValue(itemID, out string category) ? category : null;
+        }
+
+        private int GetSnippetTreeViewItemIdByCategory(string category)
+        {
+            return m_Category2ItemIdMap.TryGetValue(category, out int itemID) ? itemID : -1;
         }
 
         private string GetSnippetGuidBySnippetTreeViewItemId(int itemID)
@@ -384,6 +422,22 @@ namespace ChenPipi.CodeExecutor.Editor
         }
 
         /// <summary>
+        /// 折叠所有类别
+        /// </summary>
+        private void SnippetTreeViewCollapseAllCategories()
+        {
+            m_SnippetTreeView.CollapseAll();
+        }
+
+        /// <summary>
+        /// 展开所有类别
+        /// </summary>
+        private void SnippetTreeViewExpandAllCategories()
+        {
+            m_SnippetTreeView.ExpandAll();
+        }
+
+        /// <summary>
         /// 获取选中的代码段GUID
         /// </summary>
         /// <param name="includeCategories"></param>
@@ -391,19 +445,28 @@ namespace ChenPipi.CodeExecutor.Editor
         private List<string> GetSnippetTreeViewSelectedSnippetGuids(bool includeCategories)
         {
             List<string> guids = new List<string>();
+            Dictionary<string, bool> map = new Dictionary<string, bool>();
             IList<int> itemIDs = m_SnippetTreeView.GetSelection();
             foreach (int itemID in itemIDs)
             {
                 string guid = GetSnippetGuidBySnippetTreeViewItemId(itemID);
                 if (guid != null)
                 {
-                    guids.Add(guid);
+                    if (!map.ContainsKey(guid))
+                    {
+                        guids.Add(guid);
+                        map.Add(guid, true);
+                    }
                 }
                 else if (includeCategories)
                 {
                     string category = GetSnippetCategoryBySnippetTreeViewItemId(itemID);
                     List<SnippetInfo> snippets = CodeExecutorData.GetSnippetsWithCategory(category);
-                    guids.AddRange(snippets.Select(v => v.guid));
+                    foreach (string g in snippets.Select(v => v.guid))
+                    {
+                        guids.Add(g);
+                        map.Add(g, true);
+                    }
                 }
             }
             return guids;
@@ -417,18 +480,31 @@ namespace ChenPipi.CodeExecutor.Editor
         private List<SnippetInfo> GetSnippetTreeViewSelectedSnippets(bool includeCategories)
         {
             List<SnippetInfo> snippets = new List<SnippetInfo>();
+            Dictionary<string, bool> map = new Dictionary<string, bool>();
             IList<int> itemIDs = m_SnippetTreeView.GetSelection();
             foreach (int itemID in itemIDs)
             {
                 string guid = GetSnippetGuidBySnippetTreeViewItemId(itemID);
                 if (guid != null)
                 {
-                    snippets.Add(CodeExecutorData.GetSnippet(guid));
+                    if (!map.ContainsKey(guid))
+                    {
+                        snippets.Add(CodeExecutorData.GetSnippet(guid));
+                        map.Add(guid, true);
+                    }
                 }
                 else if (includeCategories)
                 {
                     string category = GetSnippetCategoryBySnippetTreeViewItemId(itemID);
-                    snippets.AddRange(CodeExecutorData.GetSnippetsWithCategory(category));
+                    List<SnippetInfo> list = CodeExecutorData.GetSnippetsWithCategory(category);
+                    foreach (SnippetInfo s in list)
+                    {
+                        if (!map.ContainsKey(s.guid))
+                        {
+                            snippets.Add(s);
+                            map.Add(s.guid, true);
+                        }
+                    }
                 }
             }
             return snippets;
@@ -451,16 +527,7 @@ namespace ChenPipi.CodeExecutor.Editor
                 return;
             }
             // 选中条目
-            if (notify)
-            {
-                m_SnippetTreeView.SetSelection(new int[] { itemID });
-            }
-            else
-            {
-                m_SnippetTreeView.SetSelectionWithoutNotify(new int[] { itemID });
-            }
-            // 确保展示条目
-            m_SnippetTreeView.RevealAndFrameSelectedItem();
+            SetSnippetTreeViewSelection(itemID, notify);
         }
 
         /// <summary>
@@ -485,13 +552,46 @@ namespace ChenPipi.CodeExecutor.Editor
                 selection.Add(itemID);
             }
             // 选中条目
+            SetSnippetTreeViewSelection(selection, notify);
+        }
+
+        /// <summary>
+        /// 选中条目
+        /// </summary>
+        /// <param name="itemID"></param>
+        /// <param name="notify"></param>
+        public void SetSnippetTreeViewSelection(int itemID, bool notify = true)
+        {
+            if (itemID < 0)
+            {
+                return;
+            }
             if (notify)
             {
-                m_SnippetTreeView.SetSelection(selection);
+                m_SnippetTreeView.SetSelection(new int[] { itemID });
             }
             else
             {
-                m_SnippetTreeView.SetSelectionWithoutNotify(selection);
+                m_SnippetTreeView.SetSelectionWithoutNotify(new int[] { itemID });
+            }
+            // 确保展示条目
+            m_SnippetTreeView.RevealAndFrameSelectedItem();
+        }
+
+        /// <summary>
+        /// 选中条目
+        /// </summary>
+        /// <param name="itemIDs"></param>
+        /// <param name="notify"></param>
+        public void SetSnippetTreeViewSelection(IList<int> itemIDs, bool notify = true)
+        {
+            if (notify)
+            {
+                m_SnippetTreeView.SetSelection(itemIDs);
+            }
+            else
+            {
+                m_SnippetTreeView.SetSelectionWithoutNotify(itemIDs);
             }
             // 确保展示条目
             m_SnippetTreeView.RevealAndFrameSelectedItem();
@@ -528,10 +628,15 @@ namespace ChenPipi.CodeExecutor.Editor
         /// 获取选中的条目
         /// </summary>
         /// <returns></returns>
-        private CustomTreeViewItem GetSelectedSnippetTreeViewItem()
+        private List<CustomTreeViewItem> GetSelectedSnippetTreeViewItems()
         {
-            int itemID = GetSnippetTreeViewItemIdBySnippetGuid(m_SelectedSnippetGuid);
-            return (itemID < 0 ? null : m_SnippetTreeView.FindItem(itemID));
+            List<CustomTreeViewItem> items = new List<CustomTreeViewItem>();
+            foreach (int itemID in m_SnippetTreeView.GetSelection())
+            {
+                CustomTreeViewItem item = m_SnippetTreeView.FindItem(itemID);
+                if (item != null) items.Add(item);
+            }
+            return items;
         }
 
         /// <summary>
@@ -540,6 +645,15 @@ namespace ChenPipi.CodeExecutor.Editor
         private void BeginSnippetTreeViewItemRename(string guid)
         {
             CustomTreeViewItem item = GetSnippetTreeViewItem(guid);
+            if (item != null) m_SnippetTreeView.BeginRename(item);
+        }
+
+        /// <summary>
+        /// 重命名条目
+        /// </summary>
+        private void BeginSnippetTreeViewItemRename(int itemID)
+        {
+            CustomTreeViewItem item = m_SnippetTreeView.FindItem(itemID);
             if (item != null) m_SnippetTreeView.BeginRename(item);
         }
 
@@ -559,6 +673,47 @@ namespace ChenPipi.CodeExecutor.Editor
             SetSnippetTreeViewSelection(guids, false);
             // 提示
             ShowNotification("Duplicated");
+        }
+
+        /// <summary>
+        /// 删除选中的代码段
+        /// </summary>
+        private void DeleteSelectedSnippets()
+        {
+            List<SnippetInfo> snippets = GetSnippetTreeViewSelectedSnippets(true);
+            string[] names = snippets.Select(v => $"- {v.name}").ToArray();
+            bool isOk = EditorUtility.DisplayDialog(
+                "[Code Executor] Delete snippets",
+                $"Are you sure to delete the following snippets?\n{string.Join("\n", names)}",
+                "Confirm!",
+                "Cancel"
+            );
+            if (!isOk)
+            {
+                return;
+            }
+            string[] guids = snippets.Select(v => v.guid).ToArray();
+            CodeExecutorManager.RemoveSnippets(guids);
+            // 提示
+            ShowNotification("Deleted");
+        }
+
+        /// <summary>
+        /// 删除选中的类别
+        /// </summary>
+        private void DeleteSelectedCategories()
+        {
+            List<CustomTreeViewItem> items = GetSelectedSnippetTreeViewItems();
+            for (int i = 0; i < items.Count; i++)
+            {
+                CustomTreeViewItem item = items[i];
+                if (item.isContainer)
+                {
+                    string category = item.displayName;
+                    bool notify = (i == items.Count - 1);
+                    CodeExecutorManager.RemoveCategory(category, notify);
+                }
+            }
         }
 
         #endregion
@@ -645,8 +800,7 @@ namespace ChenPipi.CodeExecutor.Editor
             if (isMultiSelection) menu.AddDisabledItem(SnippetTreeViewMenuContent.Rename);
             else menu.AddItem(SnippetTreeViewMenuContent.Rename, false, SnippetTreeViewMenu_RenameCategory, itemID);
 
-            if (isMultiSelection) menu.AddDisabledItem(SnippetTreeViewMenuContent.Delete);
-            else menu.AddItem(SnippetTreeViewMenuContent.Delete, false, SnippetTreeViewMenu_DeleteCategory, itemID);
+            menu.AddItem(SnippetTreeViewMenuContent.Delete, false, SnippetTreeViewMenu_DeleteSelectedCategories);
 
             menu.AddSeparator(string.Empty);
             menu.AddItem(SnippetTreeViewMenuContent.CreateNewCategory, false, SnippetTreeViewMenu_CreateCategory);
@@ -673,8 +827,7 @@ namespace ChenPipi.CodeExecutor.Editor
 
         private void SnippetTreeViewMenu_RenameSnippet(object itemID)
         {
-            CustomTreeViewItem item = m_SnippetTreeView.FindItem((int)itemID);
-            if (item != null) m_SnippetTreeView.BeginRename(item);
+            BeginSnippetTreeViewItemRename((int)itemID);
         }
 
         private void SnippetTreeViewMenu_DuplicateSelectedSnippets()
@@ -706,31 +859,27 @@ namespace ChenPipi.CodeExecutor.Editor
 
         private void SnippetTreeViewMenu_DeleteSelectedSnippets()
         {
-            CodeExecutorManager.RemoveSnippets(GetSnippetTreeViewSelectedSnippetGuids(true));
+            DeleteSelectedSnippets();
         }
 
         private void SnippetTreeViewMenu_RenameCategory(object itemID)
         {
-            CustomTreeViewItem item = m_SnippetTreeView.FindItem((int)itemID);
-            if (item != null) m_SnippetTreeView.BeginRename(item);
+            BeginSnippetTreeViewItemRename((int)itemID);
         }
 
-        private void SnippetTreeViewMenu_DeleteCategory(object itemID)
+        private void SnippetTreeViewMenu_DeleteSelectedCategories()
         {
-            CustomTreeViewItem item = m_SnippetTreeView.FindItem((int)itemID);
-            if (item == null) return;
-            string category = item.displayName;
-            CodeExecutorManager.RemoveCategory(category);
+            DeleteSelectedCategories();
         }
 
         private void SnippetTreeViewMenu_CollapseAllCategories()
         {
-            m_SnippetTreeView.CollapseAll();
+            SnippetTreeViewCollapseAllCategories();
         }
 
         private void SnippetTreeViewMenu_ExpandAllCategories()
         {
-            m_SnippetTreeView.ExpandAll();
+            SnippetTreeViewExpandAllCategories();
         }
 
         private void SnippetTreeViewMenu_CopyToClipboard()
@@ -745,8 +894,12 @@ namespace ChenPipi.CodeExecutor.Editor
 
         private void SnippetTreeViewMenu_CreateCategory()
         {
+            // 新增类别
             string category = CodeExecutorManager.GetNonDuplicateCategoryName("NewCategory");
             CodeExecutorManager.AddCategory(category);
+            // 重命名类别
+            int itemID = GetSnippetTreeViewItemIdByCategory(category);
+            BeginSnippetTreeViewItemRename(itemID);
         }
 
         #endregion

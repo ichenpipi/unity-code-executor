@@ -19,7 +19,7 @@ namespace ChenPipi.CodeExecutor.Editor
         /// <summary>
         /// 标题标签
         /// </summary>
-        private Label m_TitleLabel = null;
+        private TextField m_TitleTextField = null;
 
         /// <summary>
         /// 按钮容器
@@ -57,22 +57,24 @@ namespace ChenPipi.CodeExecutor.Editor
                     paddingBottom = 2,
                     paddingLeft = 3,
                     paddingRight = 3,
-                    flexDirection = FlexDirection.Column,
-                    alignItems = Align.FlexStart,
-                    justifyContent = Justify.Center,
+                    flexDirection = FlexDirection.Row,
+                    alignItems = Align.Center,
+                    justifyContent = Justify.SpaceBetween,
                 },
             };
             m_Detail.Add(m_Header);
             // 监听元素尺寸变化
             m_Detail.RegisterCallback<GeometryChangedEvent>(OnHeaderGeometryChangedEventChanged);
 
-            // 标题
-            m_TitleLabel = new Label()
+            m_TitleTextField = new TextField()
             {
                 name = "Title",
-                text = string.Empty,
+                value = string.Empty,
+                multiline = true,
+                isReadOnly = true,
                 style =
                 {
+                    flexShrink = 1,
                     fontSize = 16,
                     marginLeft = 0,
                     unityFontStyleAndWeight = FontStyle.Bold,
@@ -80,7 +82,16 @@ namespace ChenPipi.CodeExecutor.Editor
                     whiteSpace = WhiteSpace.Normal,
                 },
             };
-            m_Header.Add(m_TitleLabel);
+            m_Header.Add(m_TitleTextField);
+            {
+                // 移除输入框的背景和边框
+                VisualElement textInput = m_TitleTextField.Q<VisualElement>("unity-text-input");
+                textInput.style.backgroundColor = StyleKeyword.None;
+                textInput.style.borderTopWidth = 0;
+                textInput.style.borderBottomWidth = 0;
+                textInput.style.borderLeftWidth = 0;
+                textInput.style.borderRightWidth = 0;
+            }
 
             m_HeaderButtonContainer = new VisualElement()
             {
@@ -88,8 +99,7 @@ namespace ChenPipi.CodeExecutor.Editor
                 style =
                 {
                     flexDirection = FlexDirection.Row,
-                    position = Position.Absolute,
-                    right = 3,
+                    flexShrink = 0,
                     alignItems = Align.Center,
                     justifyContent = Justify.Center,
                 }
@@ -234,8 +244,8 @@ namespace ChenPipi.CodeExecutor.Editor
         /// <param name="suffix"></param>
         private void SetTitleText(string text, string suffix = null)
         {
-            m_TitleLabel.text = (suffix == null ? text : text + suffix);
-            m_TitleLabel.tooltip = text;
+            m_TitleTextField.value = (suffix == null ? text : text + suffix);
+            m_TitleTextField.tooltip = text;
         }
 
         /// <summary>

@@ -1,3 +1,4 @@
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -145,6 +146,7 @@ namespace ChenPipi.CodeExecutor.Editor
                     paddingBottom = 1,
                     paddingLeft = 1,
                     paddingRight = 1,
+                    opacity = 0.8f,
                 }
             };
             m_CodeEditor.Add(m_CodeEditorClipboardButton);
@@ -165,8 +167,14 @@ namespace ChenPipi.CodeExecutor.Editor
         /// <param name="evt"></param>
         private void OnCodeScrollViewGeometryChangedEventChanged(GeometryChangedEvent evt)
         {
-            float height = m_CodeScrollView.contentViewport.localBound.height;
-            m_CodeTextField.style.minHeight = height;
+            EditorApplication.delayCall += UpdateCodeTextFieldHeight;
+
+            void UpdateCodeTextFieldHeight()
+            {
+                if (m_CodeScrollView == null) return;
+                float height = m_CodeScrollView.contentViewport.localBound.height;
+                m_CodeTextField.style.minHeight = height;
+            }
         }
 
         /// <summary>
@@ -277,7 +285,9 @@ namespace ChenPipi.CodeExecutor.Editor
         /// <param name="evt"></param>
         private void OnCodeEditorMouseEnter(MouseEnterEvent evt)
         {
-            m_CodeEditorClipboardButton.style.display = DisplayStyle.Flex;
+            m_CodeEditorClipboardButton.style.display = (
+                m_CodeTextField.isReadOnly ? DisplayStyle.Flex : DisplayStyle.None
+            );
         }
 
         /// <summary>

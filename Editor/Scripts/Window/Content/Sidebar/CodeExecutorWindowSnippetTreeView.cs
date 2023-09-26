@@ -68,11 +68,18 @@ namespace ChenPipi.CodeExecutor.Editor
 
             // 代理GUI绘制调用
             m_SnippetTreeViewContainer.onGUIHandler = OnSnippetTreeViewContainerGUI;
+            // 元素失焦回调
+            m_SnippetTreeViewContainer.RegisterCallback<BlurEvent>(OnSnippetTreeViewContainerBlur);
         }
 
         private void OnSnippetTreeViewContainerGUI()
         {
             m_SnippetTreeView.OnGUI(m_SnippetTreeViewContainer.contentRect);
+        }
+
+        private void OnSnippetTreeViewContainerBlur(BlurEvent evt)
+        {
+            m_SnippetTreeView.EndRename();
         }
 
         private void OnSnippetTreeViewKeyDown(Event evt)

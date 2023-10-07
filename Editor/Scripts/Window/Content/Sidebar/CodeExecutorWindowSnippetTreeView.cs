@@ -688,20 +688,17 @@ namespace ChenPipi.CodeExecutor.Editor
         private void DeleteSelectedSnippets()
         {
             List<SnippetInfo> snippets = GetSnippetTreeViewSelectedSnippets(true);
-            string[] names = snippets.Select(v => $"- {v.name}").ToArray();
+
             bool isOk = EditorUtility.DisplayDialog(
                 "[Code Executor] Delete snippets",
-                $"Are you sure to delete the following snippets?\n{string.Join("\n", names)}",
+                $"Are you sure to delete the following snippets?\n{string.Join("\n", snippets.Select(v => $"- {v.name}"))}",
                 "Confirm!",
                 "Cancel"
             );
-            if (!isOk)
-            {
-                return;
-            }
-            string[] guids = snippets.Select(v => v.guid).ToArray();
-            CodeExecutorManager.RemoveSnippets(guids);
-            // 提示
+            if (!isOk) return;
+
+            CodeExecutorManager.RemoveSnippets(snippets.Select(v => v.guid));
+
             ShowNotification("Deleted");
         }
 
@@ -710,17 +707,36 @@ namespace ChenPipi.CodeExecutor.Editor
         /// </summary>
         private void DeleteSelectedCategories()
         {
-            List<CustomTreeViewItem> items = GetSelectedSnippetTreeViewItems();
-            for (int i = 0; i < items.Count; i++)
+            List<string> categories = new List<string>();
+            foreach (CustomTreeViewItem item in GetSelectedSnippetTreeViewItems())
             {
-                CustomTreeViewItem item = items[i];
                 if (item.isContainer)
                 {
-                    string category = item.displayName;
-                    bool notify = (i == items.Count - 1);
-                    CodeExecutorManager.RemoveCategory(category, notify);
+                    categories.Add(item.displayName);
                 }
             }
+
+            int dialogResult = EditorUtility.DisplayDialogComplex(
+                "[Code Executor] Delete categories",
+                $"Whether to delete snippets under these categories?\n{string.Join("\n", categories.Select(v => $"- {v}"))}",
+                "Keep snippets!",
+                "Cancel",
+                "Delete!"
+            );
+            if (dialogResult == 1) return;
+
+            for (int i = 0; i < categories.Count; i++)
+            {
+                string category = categories[i];
+                if (dialogResult == 2)
+                {
+                    CodeExecutorManager.RemoveSnippetsWithCategory(category, false);
+                }
+                bool notify = (i == categories.Count - 1);
+                CodeExecutorManager.RemoveCategory(category, notify);
+            }
+
+            ShowNotification("Deleted");
         }
 
         #endregion

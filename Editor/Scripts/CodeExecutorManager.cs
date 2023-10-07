@@ -276,6 +276,19 @@ namespace ChenPipi.CodeExecutor.Editor
             SaveData(true);
         }
 
+        /// <summary>
+        /// 移除代码段
+        /// </summary>
+        /// <param name="category">类别</param>
+        /// <param name="notify">通知</param>
+        public static void RemoveSnippetsWithCategory(string category, bool notify = true)
+        {
+            // 更新数据
+            CodeExecutorData.RemoveSnippetsWithCategory(category);
+            // 保存到本地并通知更新
+            SaveData(notify);
+        }
+
         #endregion
 
         #region Data: Snippet Info

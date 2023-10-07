@@ -110,7 +110,7 @@ namespace ChenPipi.CodeExecutor.Editor
             m_EditButton = new ButtonWithIcon()
             {
                 name = "EditButton",
-                tooltip = "Edit snippet",
+                tooltip = "Edit current snippet",
                 focusable = false,
                 style =
                 {

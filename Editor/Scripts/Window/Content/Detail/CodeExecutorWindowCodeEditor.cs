@@ -19,17 +19,17 @@ namespace ChenPipi.CodeExecutor.Editor
         private VisualElement m_CodeEditor = null;
 
         /// <summary>
-        /// 代码编辑器滚动视图
+        /// 代码滚动视图
         /// </summary>
         private ScrollView m_CodeScrollView = null;
 
         /// <summary>
-        /// 代码编辑器输入框
+        /// 代码文本框
         /// </summary>
         private TextField m_CodeTextField = null;
 
         /// <summary>
-        /// 代码编辑器输入框
+        /// 代码文本框
         /// </summary>
         private VisualElement m_CodeTextFieldTextInput = null;
 
@@ -81,8 +81,10 @@ namespace ChenPipi.CodeExecutor.Editor
                 }
             };
             m_CodeEditor.Add(m_CodeScrollView);
+            // 代码滚动视图形变回调
+            m_CodeScrollView.RegisterCallback<GeometryChangedEvent>(OnCodeScrollViewGeometryChangedEvent);
 
-            // 代码输入框
+            // 代码文本框
             m_CodeTextField = new TextField()
             {
                 name = "TextField",
@@ -101,7 +103,7 @@ namespace ChenPipi.CodeExecutor.Editor
                 }
             };
             m_CodeScrollView.Add(m_CodeTextField);
-
+            // 样式Hack
             {
                 // 输入框文本设为左上对齐
                 VisualElement textInput = m_CodeTextFieldTextInput = m_CodeTextField.Q<VisualElement>("unity-text-input");
@@ -117,15 +119,11 @@ namespace ChenPipi.CodeExecutor.Editor
                 textInput.style.borderBottomLeftRadius = 0;
                 textInput.style.borderBottomRightRadius = 0;
             }
-
-            // 滚动视图变化回调
-            m_CodeScrollView.RegisterCallback<GeometryChangedEvent>(OnCodeScrollViewGeometryChangedEventChanged);
-
-            // 输入框内容变化回调
+            // 内容变化回调
             m_CodeTextField.RegisterValueChangedCallback(OnCodeTextFieldValueChanged);
-            // 输入框键盘按下回调
+            // 键盘按下回调
             m_CodeTextField.RegisterCallback<KeyDownEvent>(OnCodeTextFieldKeyDown);
-            // 输入框鼠标滚轮回调
+            // 鼠标滚轮回调
             m_CodeTextField.RegisterCallback<WheelEvent>(OnCodeTextFieldMouseWheel);
 
             // 复制到剪切板按钮
@@ -162,19 +160,22 @@ namespace ChenPipi.CodeExecutor.Editor
         }
 
         /// <summary>
-        /// 滚动视图变化回调
+        /// 代码滚动视图形变回调
         /// </summary>
         /// <param name="evt"></param>
-        private void OnCodeScrollViewGeometryChangedEventChanged(GeometryChangedEvent evt)
+        private void OnCodeScrollViewGeometryChangedEvent(GeometryChangedEvent evt)
         {
             EditorApplication.delayCall += UpdateCodeTextFieldHeight;
+        }
 
-            void UpdateCodeTextFieldHeight()
-            {
-                if (m_CodeScrollView == null) return;
-                float height = m_CodeScrollView.contentViewport.localBound.height;
-                m_CodeTextField.style.minHeight = height;
-            }
+        /// <summary>
+        /// 更新代码文本元素高度
+        /// </summary>
+        private void UpdateCodeTextFieldHeight()
+        {
+            if (m_CodeScrollView == null) return;
+            float height = m_CodeScrollView.contentViewport.localBound.height;
+            m_CodeTextField.style.minHeight = height;
         }
 
         /// <summary>
@@ -183,7 +184,6 @@ namespace ChenPipi.CodeExecutor.Editor
         /// <param name="evt"></param>
         private void OnCodeTextFieldValueChanged(ChangeEvent<string> evt)
         {
-            if (m_CodeTextField.isReadOnly) return;
             if (m_CurrSnippetInfo == null) return;
             // 更新数据
             string code = m_CodeTextField.value;
@@ -322,10 +322,13 @@ namespace ChenPipi.CodeExecutor.Editor
 
         private void SetCodeEditorEditable(bool isEditable, bool focus = false)
         {
-            // 输入框只读
+            // 文本框只读
             m_CodeTextField.isReadOnly = !isEditable;
-            // 输入框背景颜色
-            m_CodeTextFieldTextInput.style.backgroundColor = (isEditable ? textFieldNormalBgColor : textFieldReadOnlyBgColor);
+
+            // 背景颜色
+            Color bgColor = (isEditable ? textFieldNormalBgColor : textFieldReadOnlyBgColor);
+            m_CodeScrollView.style.backgroundColor = bgColor;
+            m_CodeTextFieldTextInput.style.backgroundColor = bgColor;
             // 边框颜色
             Color borderColor = (isEditable ? textFieldNormalBorderColor : textFieldReadOnlyBorderColor);
             m_CodeScrollView.style.borderTopColor = borderColor;

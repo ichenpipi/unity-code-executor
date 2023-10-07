@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.1] - 2023-10-07
+
+- Fix bugs
+- Optimize interaction
+
 ## [1.1.0] - 2023-09-06
 
 - Support categories

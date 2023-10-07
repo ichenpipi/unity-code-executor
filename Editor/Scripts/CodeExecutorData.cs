@@ -229,6 +229,18 @@ UnityEngine.Debug.LogError(""[CodeExecutor] Hello World!"");",
             snippets.Remove(snippet);
         }
 
+        public static void RemoveSnippetsWithCategory(string category)
+        {
+            foreach (SnippetInfo snippet in snippets.ToArray())
+            {
+                if (snippet.MatchCategory(category))
+                {
+                    s_GuidMap.Remove(snippet.guid);
+                    snippets.Remove(snippet);
+                }
+            }
+        }
+
         public static bool HasSnippet(string guid)
         {
             return (!string.IsNullOrEmpty(guid) && s_GuidMap.ContainsKey(guid));

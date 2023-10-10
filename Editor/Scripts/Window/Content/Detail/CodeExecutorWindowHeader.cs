@@ -189,8 +189,8 @@ namespace ChenPipi.CodeExecutor.Editor
         private void OnSaveButtonClick()
         {
             // 添加新的代码段
-            string code = m_CurrSnippetInfo.code;
-            string mode = m_CurrSnippetInfo.mode;
+            string code = m_CurrSnippet.code;
+            string mode = m_CurrSnippet.mode;
             SaveAsNewSnippet(code, "Unnamed", mode);
         }
 
@@ -199,7 +199,7 @@ namespace ChenPipi.CodeExecutor.Editor
         /// </summary>
         private void OnDuplicateButtonClick()
         {
-            DuplicateSnippet(m_CurrSnippetInfo);
+            DuplicateSnippet(m_CurrSnippet);
         }
 
         /// <summary>
@@ -207,7 +207,13 @@ namespace ChenPipi.CodeExecutor.Editor
         /// </summary>
         private void OnEditButtonClick()
         {
+            // 切换为编辑状态
             SetCodeEditorEditable(true, true);
+            // 列表选中代码段
+            if (m_CurrSnippet != null)
+            {
+                SetSnippetTreeViewSelection(m_CurrSnippet.guid, false);
+            }
         }
 
         /// <summary>

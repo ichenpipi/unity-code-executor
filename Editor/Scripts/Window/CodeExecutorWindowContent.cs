@@ -90,8 +90,6 @@ namespace ChenPipi.CodeExecutor.Editor
             InitSidebar();
             // 详情
             InitDetail();
-            // 拖放区
-            //InitDropArea();
         }
 
         /// <summary>
@@ -116,7 +114,7 @@ namespace ChenPipi.CodeExecutor.Editor
         /// <summary>
         /// 当前代码段信息引用
         /// </summary>
-        private SnippetInfo m_CurrSnippetInfo = null;
+        private SnippetInfo m_CurrSnippet = null;
 
         /// <summary>
         /// 当前选中代码段
@@ -138,8 +136,18 @@ namespace ChenPipi.CodeExecutor.Editor
             // 加载代码段列表
             UpdateSnippetTreeView();
 
-            // 恢复选中的代码段
+            // 恢复选中代码段
             Switch(m_SelectedSnippetGuid);
+
+            // 恢复选中类别
+            if (!string.IsNullOrEmpty(m_SelectedCategory))
+            {
+                int itemID = GetSnippetTreeViewItemIdByCategory(m_SelectedCategory);
+                if (itemID >= 0)
+                {
+                    SetSnippetTreeViewSelection(itemID, false);
+                }
+            }
         }
 
         /// <summary>
@@ -174,7 +182,7 @@ namespace ChenPipi.CodeExecutor.Editor
             bool isNew = IsNewSnippet(snippet);
 
             // 保存引用
-            m_CurrSnippetInfo = snippet;
+            m_CurrSnippet = snippet;
             // 记录选择
             m_SelectedSnippetGuid = isNew ? null : snippet.guid;
 
@@ -182,21 +190,13 @@ namespace ChenPipi.CodeExecutor.Editor
             UpdateNewCodeItemStyle(isNew);
 
             // 更新列表状态
-            if (string.IsNullOrEmpty(m_SelectedCategory))
+            if (isNew)
             {
-                if (isNew)
-                {
-                    ClearSnippetTreeViewSelection(false);
-                }
-                else
-                {
-                    SetSnippetTreeViewSelection(m_SelectedSnippetGuid, false);
-                }
+                ClearSnippetTreeViewSelection(false);
             }
             else
             {
-                int itemID = GetSnippetTreeViewItemIdByCategory(m_SelectedCategory);
-                if (itemID >= 0) SetSnippetTreeViewSelection(itemID, false);
+                SetSnippetTreeViewSelection(m_SelectedSnippetGuid, false);
             }
 
             // 设置标题

@@ -150,7 +150,7 @@ namespace ChenPipi.CodeExecutor.Editor
             // 应用设置
             ApplySettings();
             // 更新内容
-            UpdateContent();
+            RefreshData();
         }
 
         private void Reload()
@@ -161,7 +161,7 @@ namespace ChenPipi.CodeExecutor.Editor
             // 应用设置
             ApplySettings();
             // 更新内容
-            UpdateContent();
+            RefreshData();
         }
 
         #region Data
@@ -224,7 +224,7 @@ namespace ChenPipi.CodeExecutor.Editor
         {
             if (!IsContentReady()) return;
 
-            SetCodeEditorFontSize(CodeExecutorSettings.fontSize);
+            SetCodeEditorFontSize(CodeExecutorSettings.fontSize, false);
         }
 
         #endregion

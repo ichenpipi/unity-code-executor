@@ -15,12 +15,17 @@ namespace ChenPipi.CodeExecutor.Editor
         public void AddItemsToMenu(GenericMenu menu)
         {
             menu.AddItem(new GUIContent("Built-in Execution Mode/C#"), CodeExecutorManager.enableBuiltinExecModeCSharp, Menu_BuiltinExecutionModeCSharp);
-            menu.AddItem(new GUIContent("Built-in Execution Mode/XLua (Standalone)"), CodeExecutorManager.enableBuiltinExecModeXLua, Menu_BuiltinExecutionModeXLua);
+            menu.AddItem(new GUIContent("Built-in Execution Mode/xLua (Standalone)"), CodeExecutorManager.enableBuiltinExecModeXLua, Menu_BuiltinExecutionModeXLua);
+            menu.AddItem(new GUIContent("Re-register Execution Modes"), false, Menu_ReRegisterExecutionModes);
             menu.AddItem(new GUIContent("Document: How to register execution modes?"), false, Menu_Document);
             menu.AddSeparator(string.Empty);
-            menu.AddItem(new GUIContent("Reload"), false, Menu_Reload);
+            menu.AddItem(new GUIContent("Reload Data & Settings"), false, Menu_Reload);
             menu.AddItem(new GUIContent("Show Serialized Data File"), false, Menu_ShowSerializedDataFile);
             menu.AddItem(new GUIContent("Show Serialized Settings File"), false, Menu_ShowSerializedSettingsFile);
+            menu.AddSeparator(string.Empty);
+            menu.AddDisabledItem(new GUIContent($"Code Editor Font Size/Current Font Size: {GetCodeEditorFontSize()}pt"));
+            menu.AddItem(new GUIContent("Code Editor Font Size/> + 1pt (Ctrl+MouseUp)"), false, Menu_CodeEditorFontSizeUp);
+            menu.AddItem(new GUIContent("Code Editor Font Size/> - 1pt (Ctrl+MouseDown)"), false, Menu_CodeEditorFontSizeDown);
             menu.AddSeparator(string.Empty);
             menu.AddItem(new GUIContent("Import From File"), false, Menu_ImportFromFile);
             menu.AddSeparator(string.Empty);
@@ -42,6 +47,11 @@ namespace ChenPipi.CodeExecutor.Editor
             CodeExecutorManager.enableBuiltinExecModeXLua = !CodeExecutorManager.enableBuiltinExecModeXLua;
         }
 
+        private void Menu_ReRegisterExecutionModes()
+        {
+            CodeExecutorManager.ReRegisterExecModes();
+        }
+
         private void Menu_Document()
         {
             Application.OpenURL("https://github.com/ichenpipi/unity-code-executor#readme");
@@ -49,10 +59,7 @@ namespace ChenPipi.CodeExecutor.Editor
 
         private void Menu_Reload()
         {
-            // 重新加载数据和设置
             Reload();
-            // 刷新注册模式
-            CodeExecutorManager.ReRegisterExecModes();
         }
 
         private void Menu_ShowSerializedDataFile()
@@ -83,9 +90,18 @@ namespace ChenPipi.CodeExecutor.Editor
             EditorUtility.RevealInFinder(CodeExecutorSettings.SerializedFilePath);
         }
 
-        /// <summary>
-        /// 导入
-        /// </summary>
+        private void Menu_CodeEditorFontSizeUp()
+        {
+            int newSize = GetCodeEditorFontSize() + 1;
+            SetCodeEditorFontSize(newSize, true);
+        }
+
+        private void Menu_CodeEditorFontSizeDown()
+        {
+            int newSize = GetCodeEditorFontSize() - 1;
+            SetCodeEditorFontSize(newSize, true);
+        }
+
         private void Menu_ImportFromFile()
         {
             const string title = "Import code from file";

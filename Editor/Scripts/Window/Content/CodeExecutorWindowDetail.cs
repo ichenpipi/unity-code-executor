@@ -87,7 +87,7 @@ namespace ChenPipi.CodeExecutor.Editor
         /// </summary>
         private void OnExecuteButtonClick()
         {
-            ExecuteSnippet(m_CurrSnippetInfo.name, m_CurrSnippetInfo.code, m_CurrSnippetInfo.mode);
+            ExecuteSnippet(m_CurrSnippet.name, m_CurrSnippet.code, m_CurrSnippet.mode);
         }
 
         /// <summary>

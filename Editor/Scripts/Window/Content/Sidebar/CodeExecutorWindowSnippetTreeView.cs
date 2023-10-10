@@ -60,6 +60,7 @@ namespace ChenPipi.CodeExecutor.Editor
             m_SnippetTreeView.onSelectionChange += OnSnippetTreeViewSelectionChanged;
             m_SnippetTreeView.onItemClicked += OnSnippetTreeViewItemClicked;
             m_SnippetTreeView.onItemDoubleClicked += OnSnippetTreeViewItemDoubleClicked;
+            m_SnippetTreeView.onItemContextClicked += OnSnippetTreeViewItemContextClicked;
             m_SnippetTreeView.onItemRenamed += OnSnippetTreeViewItemRenamed;
             m_SnippetTreeView.onItemDragged += OnSnippetTreeViewItemDragged;
             m_SnippetTreeView.onItemDropped += OnSnippetTreeViewItemDropped;
@@ -242,20 +243,18 @@ namespace ChenPipi.CodeExecutor.Editor
         private void OnSnippetTreeViewSelectionChanged(int[] itemIDs)
         {
             // 未选中代码段条目，不做切换
-            IList<string> guids = GetSnippetTreeViewSelectedSnippetGuids(false);
-            if (!guids.Any())
+            IList<string> snippetGuids = GetSnippetTreeViewSelectedSnippetGuids(false);
+            if (!snippetGuids.Any())
             {
                 return;
             }
             // 选中列表中包含该条目，不做切换
-            if (m_CurrSnippetInfo != null && guids.Contains(m_CurrSnippetInfo.guid))
+            if (m_CurrSnippet != null && snippetGuids.Contains(m_CurrSnippet.guid))
             {
                 return;
             }
-            // 清除类别选择
-            m_SelectedCategory = null;
             // 切换代码段
-            SnippetInfo snippet = CodeExecutorData.GetSnippet(guids.First());
+            SnippetInfo snippet = CodeExecutorData.GetSnippet(snippetGuids.First());
             Switch(snippet);
         }
 
@@ -266,10 +265,7 @@ namespace ChenPipi.CodeExecutor.Editor
         private void OnSnippetTreeViewItemClicked(int itemID)
         {
             CustomTreeViewItem item = m_SnippetTreeView.FindItem(itemID);
-            if (item.isContainer)
-            {
-                m_SelectedCategory = item.displayName;
-            }
+            m_SelectedCategory = item.isContainer ? item.displayName : null;
         }
 
         private void OnSnippetTreeViewItemDoubleClicked(int itemID)
@@ -286,6 +282,8 @@ namespace ChenPipi.CodeExecutor.Editor
                 if (snippet != null) ExecuteSnippet(snippet.name, snippet.code, snippet.mode);
             }
         }
+
+        private void OnSnippetTreeViewItemContextClicked(int itemID) { }
 
         #endregion
 
@@ -453,8 +451,7 @@ namespace ChenPipi.CodeExecutor.Editor
         {
             List<string> guids = new List<string>();
             Dictionary<string, bool> map = new Dictionary<string, bool>();
-            IList<int> itemIDs = m_SnippetTreeView.GetSelection();
-            foreach (int itemID in itemIDs)
+            foreach (int itemID in m_SnippetTreeView.GetSelection())
             {
                 string guid = GetSnippetGuidBySnippetTreeViewItemId(itemID);
                 if (guid != null)
@@ -488,8 +485,7 @@ namespace ChenPipi.CodeExecutor.Editor
         {
             List<SnippetInfo> snippets = new List<SnippetInfo>();
             Dictionary<string, bool> map = new Dictionary<string, bool>();
-            IList<int> itemIDs = m_SnippetTreeView.GetSelection();
-            foreach (int itemID in itemIDs)
+            foreach (int itemID in m_SnippetTreeView.GetSelection())
             {
                 string guid = GetSnippetGuidBySnippetTreeViewItemId(itemID);
                 if (guid != null)
@@ -573,14 +569,7 @@ namespace ChenPipi.CodeExecutor.Editor
             {
                 return;
             }
-            if (notify)
-            {
-                m_SnippetTreeView.SetSelection(new int[] { itemID });
-            }
-            else
-            {
-                m_SnippetTreeView.SetSelectionWithoutNotify(new int[] { itemID });
-            }
+            SetSnippetTreeViewSelection(new int[] { itemID }, notify);
             // 确保展示条目
             m_SnippetTreeView.RevealAndFrameSelectedItem();
         }
@@ -703,219 +692,9 @@ namespace ChenPipi.CodeExecutor.Editor
         }
 
         /// <summary>
-        /// 删除选中的类别
+        /// 创建新的类别
         /// </summary>
-        private void DeleteSelectedCategories()
-        {
-            List<string> categories = new List<string>();
-            foreach (CustomTreeViewItem item in GetSelectedSnippetTreeViewItems())
-            {
-                if (item.isContainer)
-                {
-                    categories.Add(item.displayName);
-                }
-            }
-
-            int dialogResult = EditorUtility.DisplayDialogComplex(
-                "[Code Executor] Delete categories",
-                $"Whether to delete snippets under these categories?\n{string.Join("\n", categories.Select(v => $"- {v}"))}",
-                "Keep snippets!",
-                "Cancel",
-                "Delete!"
-            );
-            if (dialogResult == 1) return;
-
-            for (int i = 0; i < categories.Count; i++)
-            {
-                string category = categories[i];
-                if (dialogResult == 2)
-                {
-                    CodeExecutorManager.RemoveSnippetsWithCategory(category, false);
-                }
-                bool notify = (i == categories.Count - 1);
-                CodeExecutorManager.RemoveCategory(category, notify);
-            }
-
-            ShowNotification("Deleted");
-        }
-
-        #endregion
-
-        #region SnippetTreeView Menu
-
-        private static class SnippetTreeViewMenuContent
-        {
-            public static readonly GUIContent Execute = new GUIContent("Execute");
-            public static readonly GUIContent Edit = new GUIContent("Edit");
-            public static readonly GUIContent Rename = new GUIContent("Rename");
-            public static readonly GUIContent Duplicate = new GUIContent("Duplicate");
-            public static readonly GUIContent Top = new GUIContent("Top");
-            public static readonly GUIContent UnTop = new GUIContent("Un-top");
-            public static readonly GUIContent Delete = new GUIContent("Delete");
-            public static readonly GUIContent CreateNewCategory = new GUIContent("Create New Category");
-            public static readonly GUIContent CollapseAllCategories = new GUIContent("Collapse All");
-            public static readonly GUIContent ExpandAllCategories = new GUIContent("Expand All");
-            public static readonly GUIContent CopyToClipboard = new GUIContent("Copy To Clipboard");
-            public static readonly GUIContent PasteFromClipboard = new GUIContent("Paste From Clipboard");
-        }
-
-        /// <summary>
-        /// 创建菜单
-        /// </summary>
-        /// <param name="menu"></param>
-        private void BuildSnippetTreeViewMenu(GenericMenu menu)
-        {
-            menu.AddItem(SnippetTreeViewMenuContent.CreateNewCategory, false, SnippetTreeViewMenu_CreateCategory);
-            menu.AddSeparator(string.Empty);
-            menu.AddItem(SnippetTreeViewMenuContent.CollapseAllCategories, false, SnippetTreeViewMenu_CollapseAllCategories);
-            menu.AddItem(SnippetTreeViewMenuContent.ExpandAllCategories, false, SnippetTreeViewMenu_ExpandAllCategories);
-            menu.AddSeparator(string.Empty);
-            menu.AddItem(SnippetTreeViewMenuContent.PasteFromClipboard, false, SnippetTreeViewMenu_PasteFromClipboard);
-        }
-
-        /// <summary>
-        /// 创建条目菜单
-        /// </summary>
-        /// <param name="menu"></param>
-        /// <param name="itemID"></param>
-        private void BuildSnippetTreeViewItemMenu(GenericMenu menu, int itemID)
-        {
-            CustomTreeViewItem item = m_SnippetTreeView.FindItem(itemID);
-            if (item.isContainer)
-            {
-                BuildSnippetTreeViewItemMenuCategory(menu, itemID);
-            }
-            else
-            {
-                BuildSnippetTreeViewItemMenuSnippet(menu, itemID);
-            }
-        }
-
-        private void BuildSnippetTreeViewItemMenuSnippet(GenericMenu menu, int itemID)
-        {
-            bool isMultiSelection = (m_SnippetTreeView.GetSelection().Count > 1);
-
-            if (isMultiSelection) menu.AddDisabledItem(SnippetTreeViewMenuContent.Execute);
-            else menu.AddItem(SnippetTreeViewMenuContent.Execute, false, SnippetTreeViewMenu_ExecuteSnippet, itemID);
-
-            menu.AddSeparator(string.Empty);
-
-            if (isMultiSelection) menu.AddDisabledItem(SnippetTreeViewMenuContent.Edit);
-            else menu.AddItem(SnippetTreeViewMenuContent.Edit, false, SnippetTreeViewMenu_EditSnippet, itemID);
-
-            if (isMultiSelection) menu.AddDisabledItem(SnippetTreeViewMenuContent.Rename);
-            else menu.AddItem(SnippetTreeViewMenuContent.Rename, false, SnippetTreeViewMenu_RenameSnippet, itemID);
-
-            menu.AddItem(SnippetTreeViewMenuContent.Duplicate, false, SnippetTreeViewMenu_DuplicateSelectedSnippets);
-            menu.AddSeparator(string.Empty);
-            menu.AddItem(SnippetTreeViewMenuContent.Top, false, SnippetTreeViewMenu_TopSelectedSnippets);
-            menu.AddItem(SnippetTreeViewMenuContent.UnTop, false, SnippetTreeViewMenu_UnTopSelectedSnippets);
-            menu.AddSeparator(string.Empty);
-            menu.AddItem(SnippetTreeViewMenuContent.Delete, false, SnippetTreeViewMenu_DeleteSelectedSnippets);
-            menu.AddSeparator(string.Empty);
-            menu.AddItem(SnippetTreeViewMenuContent.CopyToClipboard, false, SnippetTreeViewMenu_CopyToClipboard);
-        }
-
-        private void BuildSnippetTreeViewItemMenuCategory(GenericMenu menu, int itemID)
-        {
-            bool isMultiSelection = (m_SnippetTreeView.GetSelection().Count > 1);
-
-            if (isMultiSelection) menu.AddDisabledItem(SnippetTreeViewMenuContent.Rename);
-            else menu.AddItem(SnippetTreeViewMenuContent.Rename, false, SnippetTreeViewMenu_RenameCategory, itemID);
-
-            menu.AddItem(SnippetTreeViewMenuContent.Delete, false, SnippetTreeViewMenu_DeleteSelectedCategories);
-
-            menu.AddSeparator(string.Empty);
-            menu.AddItem(SnippetTreeViewMenuContent.CreateNewCategory, false, SnippetTreeViewMenu_CreateCategory);
-
-            menu.AddSeparator(string.Empty);
-            menu.AddItem(SnippetTreeViewMenuContent.CopyToClipboard, false, SnippetTreeViewMenu_CopyToClipboard);
-        }
-
-        #region Menu Methods
-
-        private void SnippetTreeViewMenu_ExecuteSnippet(object itemID)
-        {
-            SnippetInfo snippet = GetSnippetInfoBySnippetTreeViewItemId((int)itemID);
-            if (snippet != null) ExecuteSnippet(snippet.name, snippet.code, snippet.mode);
-        }
-
-        private void SnippetTreeViewMenu_EditSnippet(object itemID)
-        {
-            SnippetInfo snippet = GetSnippetInfoBySnippetTreeViewItemId((int)itemID);
-            if (snippet == null) return;
-            Switch(snippet);
-            SetCodeEditorEditable(true, true);
-        }
-
-        private void SnippetTreeViewMenu_RenameSnippet(object itemID)
-        {
-            BeginSnippetTreeViewItemRename((int)itemID);
-        }
-
-        private void SnippetTreeViewMenu_DuplicateSelectedSnippets()
-        {
-            DuplicateSelectedSnippets();
-        }
-
-        private void SnippetTreeViewMenu_TopSelectedSnippets()
-        {
-            List<SnippetInfo> snippets = GetSnippetTreeViewSelectedSnippets(true);
-            for (int i = 0; i < snippets.Count; i++)
-            {
-                SnippetInfo snippet = snippets[i];
-                bool notify = (i == snippets.Count - 1);
-                CodeExecutorManager.SetSnippetTop(snippet.guid, true, notify);
-            }
-        }
-
-        private void SnippetTreeViewMenu_UnTopSelectedSnippets()
-        {
-            List<SnippetInfo> snippets = GetSnippetTreeViewSelectedSnippets(true);
-            for (int i = 0; i < snippets.Count; i++)
-            {
-                SnippetInfo snippet = snippets[i];
-                bool notify = (i == snippets.Count - 1);
-                CodeExecutorManager.SetSnippetTop(snippet.guid, false, notify);
-            }
-        }
-
-        private void SnippetTreeViewMenu_DeleteSelectedSnippets()
-        {
-            DeleteSelectedSnippets();
-        }
-
-        private void SnippetTreeViewMenu_RenameCategory(object itemID)
-        {
-            BeginSnippetTreeViewItemRename((int)itemID);
-        }
-
-        private void SnippetTreeViewMenu_DeleteSelectedCategories()
-        {
-            DeleteSelectedCategories();
-        }
-
-        private void SnippetTreeViewMenu_CollapseAllCategories()
-        {
-            SnippetTreeViewCollapseAllCategories();
-        }
-
-        private void SnippetTreeViewMenu_ExpandAllCategories()
-        {
-            SnippetTreeViewExpandAllCategories();
-        }
-
-        private void SnippetTreeViewMenu_CopyToClipboard()
-        {
-            DoCopyToClipboard();
-        }
-
-        private void SnippetTreeViewMenu_PasteFromClipboard()
-        {
-            DoPasteFromClipboard();
-        }
-
-        private void SnippetTreeViewMenu_CreateCategory()
+        private void CreateNewCategory()
         {
             // 新增类别
             string category = CodeExecutorManager.GetNonDuplicateCategoryName("NewCategory");
@@ -925,7 +704,43 @@ namespace ChenPipi.CodeExecutor.Editor
             BeginSnippetTreeViewItemRename(itemID);
         }
 
-        #endregion
+        /// <summary>
+        /// 删除类别
+        /// </summary>
+        /// <param name="itemID"></param>
+        private void DeleteCategory(int itemID)
+        {
+            CustomTreeViewItem item = m_SnippetTreeView.FindItem(itemID);
+            if (!item.isContainer)
+            {
+                return;
+            }
+
+            string category = item.displayName;
+            List<SnippetInfo> snippets = CodeExecutorData.GetSnippetsWithCategory(category);
+            if (snippets.Count > 0)
+            {
+                int dialogResult = EditorUtility.DisplayDialogComplex(
+                    "[Code Executor] Delete category",
+                    $"Whether to delete snippets under this category?\n{string.Join("\n", snippets.Select(v => $"- {v.name}"))}",
+                    "Keep snippets!",
+                    "Cancel",
+                    "Delete!"
+                );
+                if (dialogResult == 1)
+                {
+                    return;
+                }
+                if (dialogResult == 2)
+                {
+                    CodeExecutorManager.RemoveSnippetsWithCategory(category, false);
+                }
+            }
+
+            CodeExecutorManager.RemoveCategory(category, true);
+
+            ShowNotification("Deleted");
+        }
 
         #endregion
 

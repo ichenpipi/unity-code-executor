@@ -184,18 +184,18 @@ namespace ChenPipi.CodeExecutor.Editor
         /// <param name="evt"></param>
         private void OnCodeTextFieldValueChanged(ChangeEvent<string> evt)
         {
-            if (m_CurrSnippetInfo == null) return;
+            if (m_CurrSnippet == null) return;
             // 更新数据
             string code = m_CodeTextField.value;
-            m_CurrSnippetInfo.code = code;
+            m_CurrSnippet.code = code;
             // 序列化数据
-            if (IsNewSnippet(m_CurrSnippetInfo))
+            if (IsNewSnippet(m_CurrSnippet))
             {
                 CodeExecutorManager.SetNewSnippetCode(code);
             }
             else
             {
-                CodeExecutorManager.SetSnippetCode(m_CurrSnippetInfo.guid, code);
+                CodeExecutorManager.SetSnippetCode(m_CurrSnippet.guid, code);
             }
         }
 
@@ -259,11 +259,9 @@ namespace ChenPipi.CodeExecutor.Editor
             {
                 // 改变字体大小
                 const int step = 1;
-                float oldSize = m_CodeTextField.style.fontSize.value.value;
+                float oldSize = GetCodeEditorFontSize();
                 int newSize = (int)(evt.delta.y < 0 ? oldSize + step : oldSize - step);
-                newSize = SetCodeEditorFontSize(newSize);
-                CodeExecutorSettings.fontSize = newSize;
-                ShowNotification($"Font size: {newSize}");
+                SetCodeEditorFontSize(newSize, true);
                 // 阻止事件的默认行为，停止事件传播
                 evt.PreventDefault();
                 evt.StopImmediatePropagation();
@@ -275,7 +273,7 @@ namespace ChenPipi.CodeExecutor.Editor
         /// </summary>
         private void OnCodeEditorClipboardButtonClick()
         {
-            PipiUtility.SaveToClipboard(m_CurrSnippetInfo.code);
+            PipiUtility.SaveToClipboard(m_CurrSnippet.code);
             ShowNotification("Copied to clipboard", 1f);
         }
 
@@ -313,11 +311,19 @@ namespace ChenPipi.CodeExecutor.Editor
             }
         }
 
-        private int SetCodeEditorFontSize(int size)
+        private int GetCodeEditorFontSize()
+        {
+            if (m_CodeTextField == null) return 0;
+            return (int)m_CodeTextField.style.fontSize.value.value;
+        }
+
+        private void SetCodeEditorFontSize(int size, bool showNotification)
         {
             size = Mathf.Clamp(size, 8, 40);
             m_CodeTextField.style.fontSize = size;
-            return size;
+            CodeExecutorSettings.fontSize = size;
+            // 提示
+            if (showNotification) ShowNotification($"Font size: {size}pt");
         }
 
         private void SetCodeEditorEditable(bool isEditable, bool focus = false)

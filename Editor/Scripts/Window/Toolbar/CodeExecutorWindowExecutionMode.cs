@@ -74,7 +74,7 @@ namespace ChenPipi.CodeExecutor.Editor
         /// <returns></returns>
         private DropdownMenuAction.Status GetExecutionModeMenuActionStatus(DropdownMenuAction action)
         {
-            if (m_CurrSnippetInfo != null && action.name.Equals(m_CurrSnippetInfo.mode, StringComparison.OrdinalIgnoreCase))
+            if (m_CurrSnippet != null && action.name.Equals(m_CurrSnippet.mode, StringComparison.OrdinalIgnoreCase))
             {
                 return DropdownMenuAction.Status.Checked;
             }
@@ -113,7 +113,7 @@ namespace ChenPipi.CodeExecutor.Editor
         /// <param name="mode"></param>
         private void SwitchExecutionMode(string mode)
         {
-            if (m_CurrSnippetInfo == null)
+            if (m_CurrSnippet == null)
             {
                 return;
             }
@@ -122,16 +122,16 @@ namespace ChenPipi.CodeExecutor.Editor
                 mode = CodeExecutorManager.DefaultExecMode.name;
             }
             // 更新数据
-            m_CurrSnippetInfo.mode = mode;
+            m_CurrSnippet.mode = mode;
             SetExecutionModeText(mode);
             // 序列化数据
-            if (IsNewSnippet(m_CurrSnippetInfo))
+            if (IsNewSnippet(m_CurrSnippet))
             {
                 CodeExecutorManager.SetNewSnippetExecMode(mode);
             }
             else
             {
-                CodeExecutorManager.SetSnippetExecMode(m_CurrSnippetInfo.guid, mode);
+                CodeExecutorManager.SetSnippetExecMode(m_CurrSnippet.guid, mode);
             }
         }
 

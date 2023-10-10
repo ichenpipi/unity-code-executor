@@ -235,7 +235,7 @@ namespace ChenPipi.CodeExecutor.Editor
         private void SwitchSorting(Sorting sorting)
         {
             m_Sorting = sorting;
-            UpdateContent();
+            RefreshData();
         }
 
         #endregion

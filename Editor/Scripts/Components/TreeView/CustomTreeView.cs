@@ -33,6 +33,10 @@ namespace ChenPipi.CodeExecutor.Editor
 
         public event Action<int> onItemDoubleClicked;
 
+        public event Action onContextClicked;
+
+        public event Action<int> onItemContextClicked;
+
         public event Action<int, string, string> onItemRenamed;
 
         public event Action<int[]> onItemDragged;
@@ -135,28 +139,30 @@ namespace ChenPipi.CodeExecutor.Editor
 
         protected override void ContextClicked()
         {
-            if (buildMenu == null)
+            onContextClicked?.Invoke();
+
+            if (buildMenu != null)
             {
-                return;
+                GenericMenu menu = new GenericMenu();
+                buildMenu.Invoke(menu);
+                menu.ShowAsContext();
+                // 确保立刻显示菜单
+                Event.current.Use();
             }
-            GenericMenu menu = new GenericMenu();
-            buildMenu.Invoke(menu);
-            menu.ShowAsContext();
-            // 确保立刻显示菜单
-            Event.current.Use();
         }
 
         protected override void ContextClickedItem(int id)
         {
-            if (buildItemMenu == null)
+            onItemContextClicked?.Invoke(id);
+
+            if (buildItemMenu != null)
             {
-                return;
+                GenericMenu menu = new GenericMenu();
+                buildItemMenu.Invoke(menu, id);
+                menu.ShowAsContext();
+                // 确保立刻显示菜单
+                Event.current.Use();
             }
-            GenericMenu menu = new GenericMenu();
-            buildItemMenu.Invoke(menu, id);
-            menu.ShowAsContext();
-            // 确保立刻显示菜单
-            Event.current.Use();
         }
 
         #endregion
@@ -195,7 +201,8 @@ namespace ChenPipi.CodeExecutor.Editor
         {
             foreach (int id in args.draggedItemIDs)
             {
-                if (FindItem(id).isContainer)
+                CustomTreeViewItem item = FindItem(id);
+                if (item == null || item.isContainer)
                 {
                     return false;
                 }

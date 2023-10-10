@@ -125,31 +125,35 @@ namespace ChenPipi.CodeExecutor.Editor
         {
             // 移除空格
             string text = m_SearchText.Trim();
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                return;
+            }
 
             // 匹配名称
-            if (!string.IsNullOrWhiteSpace(text))
+            string pattern = text.Trim().ToCharArray().Join(".*");
+            Regex regex = new Regex(pattern, RegexOptions.IgnoreCase);
+
+            List<SnippetInfo> newSnippets = new List<SnippetInfo>();
+            List<string> newCategories = new List<string>();
+
+            foreach (SnippetInfo snippet in snippets)
             {
-                string pattern = text.Trim().ToCharArray().Join(".*");
-                Regex regex = new Regex(pattern, RegexOptions.IgnoreCase);
-                List<SnippetInfo> newSnippetInfos = new List<SnippetInfo>();
-                List<string> newCategories = new List<string>();
-                foreach (SnippetInfo snippet in snippets)
+                if (!regex.Match(snippet.name).Success)
                 {
-                    if (!regex.Match(snippet.name).Success)
-                    {
-                        continue;
-                    }
-                    // 有效的代码段
-                    newSnippetInfos.Add(snippet);
-                    // 有效的类别
-                    if (categories.Contains(snippet.category) && !newCategories.Contains(snippet.category))
-                    {
-                        newCategories.Add(snippet.category);
-                    }
+                    continue;
                 }
-                snippets = newSnippetInfos;
-                categories = newCategories;
+                // 有效的代码段
+                newSnippets.Add(snippet);
+                // 有效的类别
+                if (categories.Contains(snippet.category) && !newCategories.Contains(snippet.category))
+                {
+                    newCategories.Add(snippet.category);
+                }
             }
+
+            snippets = newSnippets;
+            categories = newCategories;
         }
 
         #endregion

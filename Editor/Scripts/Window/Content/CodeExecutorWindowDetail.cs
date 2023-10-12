@@ -104,7 +104,7 @@ namespace ChenPipi.CodeExecutor.Editor
         /// <param name="modeName"></param>
         private void ExecuteSnippet(string snippetName, string codeText, string modeName)
         {
-            if (modeName.Equals(CodeExecutorManager.DefaultExecMode.name, StringComparison.OrdinalIgnoreCase))
+            if (modeName == null || modeName.Equals(CodeExecutorManager.DefaultExecMode.name, StringComparison.OrdinalIgnoreCase))
             {
                 ShowNotification($"Please select a valid execution mode!", 1f);
                 return;

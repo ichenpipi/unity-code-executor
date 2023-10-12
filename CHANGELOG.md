@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.2] - 2023-10-12
+
+- Fix bugs
+- Optimize interaction
+
 ## [1.1.1] - 2023-10-07
 
 - Fix bugs

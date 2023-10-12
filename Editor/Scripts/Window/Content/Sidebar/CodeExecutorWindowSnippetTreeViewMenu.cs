@@ -20,6 +20,8 @@ namespace ChenPipi.CodeExecutor.Editor
             public static readonly GUIContent Top = new GUIContent("Top");
             public static readonly GUIContent UnTop = new GUIContent("Un-top");
             public static readonly GUIContent Delete = new GUIContent("Delete");
+            public static readonly GUIContent CreateNewSnippet = new GUIContent("Create New Snippet");
+            public static readonly GUIContent CreateNewSnippetUnderCategory = new GUIContent("Create New Snippet Under Category");
             public static readonly GUIContent CreateNewCategory = new GUIContent("Create New Category");
             public static readonly GUIContent CollapseAllCategories = new GUIContent("Collapse All");
             public static readonly GUIContent ExpandAllCategories = new GUIContent("Expand All");
@@ -33,6 +35,7 @@ namespace ChenPipi.CodeExecutor.Editor
         /// <param name="menu"></param>
         private void BuildSnippetTreeViewMenu(GenericMenu menu)
         {
+            menu.AddItem(SnippetTreeViewMenuContent.CreateNewSnippet, false, SnippetTreeViewMenu_CreateNewSnippet);
             menu.AddItem(SnippetTreeViewMenuContent.CreateNewCategory, false, SnippetTreeViewMenu_CreateNewCategory);
 
             menu.AddSeparator(string.Empty);
@@ -95,6 +98,7 @@ namespace ChenPipi.CodeExecutor.Editor
             }
 
             menu.AddSeparator(string.Empty);
+            menu.AddItem(SnippetTreeViewMenuContent.CreateNewSnippetUnderCategory, false, SnippetTreeViewMenu_CreateNewSnippetUnderCategory, itemID);
             menu.AddItem(SnippetTreeViewMenuContent.CreateNewCategory, false, SnippetTreeViewMenu_CreateNewCategory);
 
             menu.AddSeparator(string.Empty);
@@ -111,6 +115,7 @@ namespace ChenPipi.CodeExecutor.Editor
             else menu.AddItem(SnippetTreeViewMenuContent.Delete, false, SnippetTreeViewMenu_DeleteCategory, itemID);
 
             menu.AddSeparator(string.Empty);
+            menu.AddItem(SnippetTreeViewMenuContent.CreateNewSnippetUnderCategory, false, SnippetTreeViewMenu_CreateNewSnippetUnderCategory, itemID);
             menu.AddItem(SnippetTreeViewMenuContent.CreateNewCategory, false, SnippetTreeViewMenu_CreateNewCategory);
 
             menu.AddSeparator(string.Empty);
@@ -200,6 +205,17 @@ namespace ChenPipi.CodeExecutor.Editor
         private void SnippetTreeViewMenu_PasteFromClipboard()
         {
             DoPasteFromClipboard();
+        }
+
+        private void SnippetTreeViewMenu_CreateNewSnippet()
+        {
+            SaveAsNewSnippet(string.Empty, null, CodeExecutorManager.DefaultExecMode.name, null);
+        }
+
+        private void SnippetTreeViewMenu_CreateNewSnippetUnderCategory(object itemID)
+        {
+            string category = GetSnippetCategoryBySnippetTreeViewItemId((int)itemID);
+            SaveAsNewSnippet(string.Empty, null, CodeExecutorManager.DefaultExecMode.name, category);
         }
 
         private void SnippetTreeViewMenu_CreateNewCategory()

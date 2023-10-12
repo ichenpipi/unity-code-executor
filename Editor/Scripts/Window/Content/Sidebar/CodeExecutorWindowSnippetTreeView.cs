@@ -105,13 +105,13 @@ namespace ChenPipi.CodeExecutor.Editor
             {
                 DuplicateSelectedSnippets();
             }
-            // Ctrl + Numpad -
-            else if (evt.control && evt.keyCode == KeyCode.KeypadMinus)
+            // Ctrl + Numpad- / Ctrl + [
+            else if (evt.control && (evt.keyCode == KeyCode.KeypadMinus || evt.keyCode == KeyCode.LeftBracket))
             {
                 SnippetTreeViewCollapseAllCategories();
             }
-            // Ctrl + Numpad +
-            else if (evt.control && evt.keyCode == KeyCode.KeypadPlus)
+            // Ctrl + Numpad+ / Ctrl + ]
+            else if (evt.control && (evt.keyCode == KeyCode.KeypadPlus || evt.keyCode == KeyCode.RightBracket))
             {
                 SnippetTreeViewExpandAllCategories();
             }

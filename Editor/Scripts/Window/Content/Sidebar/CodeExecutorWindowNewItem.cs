@@ -39,9 +39,8 @@ namespace ChenPipi.CodeExecutor.Editor
             m_NewItem.SetIcon(PipiUtility.GetIcon("CreateAddNew"));
             // 点击回调
             m_NewItem.RegisterCallback<MouseDownEvent>(OnNewCodeItemMouseDown);
-            // 菜单回调
-            m_NewItem.AddManipulator(new ContextualMenuManipulator(null));
-            m_NewItem.RegisterCallback<ContextualMenuPopulateEvent>(OnNewCodeItemContextualMenuPopulate);
+            // 右键菜单
+            m_NewItem.AddManipulator(new ContextualMenuManipulator(NewCodeItemMenuBuilder));
             m_Sidebar.Add(m_NewItem);
         }
 
@@ -50,11 +49,11 @@ namespace ChenPipi.CodeExecutor.Editor
             Switch(CodeExecutorData.newSnippet);
         }
 
-        private void OnNewCodeItemContextualMenuPopulate(ContextualMenuPopulateEvent evt)
+        private void NewCodeItemMenuBuilder(ContextualMenuPopulateEvent evt)
         {
-            evt.menu.AppendAction("Create Empty Snippet", action =>
+            evt.menu.AppendAction("Create New Empty Snippet", action =>
             {
-                SaveAsNewSnippet(string.Empty);
+                SnippetTreeViewMenu_CreateNewSnippet();
             });
         }
 

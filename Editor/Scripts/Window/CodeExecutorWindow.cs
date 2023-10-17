@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
@@ -269,16 +270,24 @@ namespace ChenPipi.CodeExecutor.Editor
         }
 
         /// <summary>
+        /// 剪贴板数据包裹类型
+        /// </summary>
+        [Serializable]
+        private class ClipboardDataWrapper
+        {
+            public List<SnippetInfo> snippets = new List<SnippetInfo>();
+        }
+
+        /// <summary>
         /// 保存代码段到系统剪贴板
         /// </summary>
         /// <param name="snippets"></param>
         private void SaveSnippetsToClipboard(List<SnippetInfo> snippets)
         {
-            SnippetWrapper wrapper = new SnippetWrapper();
-            foreach (SnippetInfo snippet in snippets)
+            ClipboardDataWrapper wrapper = new ClipboardDataWrapper()
             {
-                wrapper.snippets.Add(new SnippetInfoSimplified(snippet));
-            }
+                snippets = snippets,
+            };
             string data = JsonUtility.ToJson(wrapper, false);
             PipiUtility.SaveToClipboard(data);
         }
@@ -303,25 +312,24 @@ namespace ChenPipi.CodeExecutor.Editor
 
             try
             {
-                SnippetWrapper wrapper = JsonUtility.FromJson<SnippetWrapper>(data);
+                ClipboardDataWrapper wrapper = JsonUtility.FromJson<ClipboardDataWrapper>(data);
                 if (wrapper == null || wrapper.snippets.Count == 0)
                 {
                     return null;
                 }
 
+                List<SnippetInfo> snippets = wrapper.snippets;
                 List<SnippetInfo> list = new List<SnippetInfo>();
-                for (int i = 0; i < wrapper.snippets.Count; i++)
+                for (int i = 0; i < snippets.Count; i++)
                 {
-                    SnippetInfoSimplified info = wrapper.snippets[i];
-                    string name = CodeExecutorManager.GetNonDuplicateSnippetName(info.name);
-                    if (!CodeExecutorData.HasCategory(info.category))
+                    SnippetInfo snippet = snippets[i];
+                    if (!CodeExecutorData.HasCategory(snippet.category))
                     {
-                        CodeExecutorManager.AddCategory(info.category, false);
+                        CodeExecutorManager.AddCategory(snippet.category, false);
                     }
-                    bool notify = (i == wrapper.snippets.Count - 1);
-                    list.Add(CodeExecutorManager.AddSnippet(info.code, name, info.mode, info.category, notify));
+                    snippet.name = CodeExecutorManager.GetNonDuplicateSnippetName(snippet.name);
+                    list.Add(CodeExecutorManager.AddSnippet(snippet, (i == snippets.Count - 1)));
                 }
-
                 return list;
             }
             catch

@@ -19,20 +19,20 @@ namespace ChenPipi.CodeExecutor.Editor
             menu.AddItem(new GUIContent("Re-register Execution Modes"), false, Menu_ReRegisterExecutionModes);
             menu.AddItem(new GUIContent("Document: How to register execution modes?"), false, Menu_Document);
             menu.AddSeparator(string.Empty);
-            menu.AddItem(new GUIContent("Reload Data & Settings"), false, Menu_Reload);
+            menu.AddDisabledItem(new GUIContent($"Code Editor Font Size/Current: {GetCodeEditorFontSize()}pt"));
+            menu.AddItem(new GUIContent("Code Editor Font Size/+ 1pt (Ctrl+MouseUp)"), false, Menu_CodeEditorFontSize_Increase);
+            menu.AddItem(new GUIContent("Code Editor Font Size/- 1pt (Ctrl+MouseDown)"), false, Menu_CodeEditorFontSize_Decrease);
+            menu.AddSeparator(string.Empty);
+            menu.AddItem(new GUIContent("Reload"), false, Menu_Reload);
             menu.AddItem(new GUIContent("Show Serialized Data File"), false, Menu_ShowSerializedDataFile);
             menu.AddItem(new GUIContent("Show Serialized Settings File"), false, Menu_ShowSerializedSettingsFile);
-            menu.AddSeparator(string.Empty);
-            menu.AddDisabledItem(new GUIContent($"Code Editor Font Size/Current Font Size: {GetCodeEditorFontSize()}pt"));
-            menu.AddItem(new GUIContent("Code Editor Font Size/> + 1pt (Ctrl+MouseUp)"), false, Menu_CodeEditorFontSizeUp);
-            menu.AddItem(new GUIContent("Code Editor Font Size/> - 1pt (Ctrl+MouseDown)"), false, Menu_CodeEditorFontSizeDown);
-            menu.AddSeparator(string.Empty);
-            menu.AddItem(new GUIContent("Import From File"), false, Menu_ImportFromFile);
+            // menu.AddSeparator(string.Empty);
+            // menu.AddItem(new GUIContent("Import From File"), false, Menu_ImportFromFile);
             menu.AddSeparator(string.Empty);
             menu.AddItem(new GUIContent("Clear Data ⚠️"), false, Menu_ClearData);
             menu.AddItem(new GUIContent("Reset Settings ⚠️"), false, Menu_ResetSettings);
             menu.AddSeparator(string.Empty);
-            menu.AddItem(new GUIContent("About/陈皮皮 (ichenpipi)"), false, Menu_HomePage);
+            menu.AddItem(new GUIContent("About/Author: 陈皮皮 (ichenpipi)"), false, Menu_HomePage);
             menu.AddItem(new GUIContent("About/Project Home Page (Github)"), false, Menu_ProjectHomePageGithub);
             menu.AddItem(new GUIContent("About/Project Home Page (Gitee)"), false, Menu_ProjectHomePageGitee);
         }
@@ -90,13 +90,13 @@ namespace ChenPipi.CodeExecutor.Editor
             EditorUtility.RevealInFinder(CodeExecutorSettings.SerializedFilePath);
         }
 
-        private void Menu_CodeEditorFontSizeUp()
+        private void Menu_CodeEditorFontSize_Increase()
         {
             int newSize = GetCodeEditorFontSize() + 1;
             SetCodeEditorFontSize(newSize, true);
         }
 
-        private void Menu_CodeEditorFontSizeDown()
+        private void Menu_CodeEditorFontSize_Decrease()
         {
             int newSize = GetCodeEditorFontSize() - 1;
             SetCodeEditorFontSize(newSize, true);

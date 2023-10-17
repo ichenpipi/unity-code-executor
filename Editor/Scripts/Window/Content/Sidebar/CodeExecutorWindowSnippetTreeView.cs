@@ -118,7 +118,7 @@ namespace ChenPipi.CodeExecutor.Editor
             // Delete / Backspace
             else if (evt.keyCode == KeyCode.Delete || evt.keyCode == KeyCode.Backspace)
             {
-                DeleteSelectedSnippets();
+                DeleteSelectedSnippetsAndCategories();
             }
             // F5
             else if (evt.keyCode == KeyCode.F5)
@@ -621,21 +621,6 @@ namespace ChenPipi.CodeExecutor.Editor
         }
 
         /// <summary>
-        /// 获取选中的条目
-        /// </summary>
-        /// <returns></returns>
-        private List<CustomTreeViewItem> GetSelectedSnippetTreeViewItems()
-        {
-            List<CustomTreeViewItem> items = new List<CustomTreeViewItem>();
-            foreach (int itemID in m_SnippetTreeView.GetSelection())
-            {
-                CustomTreeViewItem item = m_SnippetTreeView.FindItem(itemID);
-                if (item != null) items.Add(item);
-            }
-            return items;
-        }
-
-        /// <summary>
         /// 重命名条目
         /// </summary>
         private void BeginSnippetTreeViewItemRename(string guid)
@@ -672,23 +657,107 @@ namespace ChenPipi.CodeExecutor.Editor
         }
 
         /// <summary>
-        /// 删除选中的代码段
+        /// 删除代码段
         /// </summary>
-        private void DeleteSelectedSnippets()
+        /// <param name="snippets"></param>
+        /// <returns></returns>
+        private bool DeleteSnippets(IList<SnippetInfo> snippets)
         {
-            List<SnippetInfo> snippets = GetSnippetTreeViewSelectedSnippets(true);
-
             bool isOk = EditorUtility.DisplayDialog(
                 "[Code Executor] Delete snippets",
-                $"Are you sure to delete the following snippets?\n{string.Join("\n", snippets.Select(v => $"- {v.name}"))}",
+                $"Are you sure to delete the following snippets?\n{string.Join("\n", snippets.Select(v => $"- {v}"))}",
                 "Confirm!",
                 "Cancel"
             );
-            if (!isOk) return;
+            if (!isOk) return false;
 
             CodeExecutorManager.RemoveSnippets(snippets.Select(v => v.guid));
+            return true;
+        }
 
-            ShowNotification("Deleted");
+        /// <summary>
+        /// 删除类别
+        /// </summary>
+        /// <param name="category"></param>
+        /// <returns></returns>
+        private bool DeleteCategory(string category)
+        {
+            List<SnippetInfo> snippets = CodeExecutorData.GetSnippetsWithCategory(category);
+            if (snippets.Count > 0)
+            {
+                int dialogResult = EditorUtility.DisplayDialogComplex(
+                    "[Code Executor] Delete category",
+                    $"Whether to delete snippets under category '{category}'?\n{string.Join("\n", snippets.Select(v => $"- {v.name}"))}",
+                    "Keep snippets!",
+                    "Cancel",
+                    "Delete!"
+                );
+                if (dialogResult == 1)
+                {
+                    return false;
+                }
+                if (dialogResult == 2)
+                {
+                    CodeExecutorManager.RemoveSnippetsWithCategory(category, false);
+                }
+            }
+
+            CodeExecutorManager.RemoveCategory(category, true);
+            return true;
+        }
+
+        /// <summary>
+        /// 删除选中的代码段和类别
+        /// </summary>
+        private void DeleteSelectedSnippetsAndCategories()
+        {
+            bool hasSelectedSnippets = false;
+
+            Dictionary<string, bool> snippetRecord = new Dictionary<string, bool>();
+            List<SnippetInfo> snippets = new List<SnippetInfo>();
+            List<string> categories = new List<string>();
+            foreach (int itemID in m_SnippetTreeView.GetSelection())
+            {
+                string guid = GetSnippetGuidBySnippetTreeViewItemId(itemID);
+                if (guid != null)
+                {
+                    hasSelectedSnippets = true;
+                    if (!snippetRecord.ContainsKey(guid))
+                    {
+                        snippets.Add(CodeExecutorData.GetSnippet(guid));
+                        snippetRecord.Add(guid, true);
+                    }
+                }
+                else
+                {
+                    // 类别
+                    string category = GetSnippetCategoryBySnippetTreeViewItemId(itemID);
+                    if (string.IsNullOrEmpty(category))
+                    {
+                        continue;
+                    }
+                    categories.Add(category);
+                    // 类别下的代码段
+                    foreach (SnippetInfo s in CodeExecutorData.GetSnippetsWithCategory(category))
+                    {
+                        if (!snippetRecord.ContainsKey(s.guid))
+                        {
+                            snippets.Add(s);
+                            snippetRecord.Add(s.guid, true);
+                        }
+                    }
+                }
+            }
+
+            if (hasSelectedSnippets && snippets.Count > 0 && !DeleteSnippets(snippets))
+            {
+                return;
+            }
+
+            foreach (string category in categories)
+            {
+                DeleteCategory(category);
+            }
         }
 
         /// <summary>
@@ -702,44 +771,6 @@ namespace ChenPipi.CodeExecutor.Editor
             // 重命名类别
             int itemID = GetSnippetTreeViewItemIdByCategory(category);
             BeginSnippetTreeViewItemRename(itemID);
-        }
-
-        /// <summary>
-        /// 删除类别
-        /// </summary>
-        /// <param name="itemID"></param>
-        private void DeleteCategory(int itemID)
-        {
-            CustomTreeViewItem item = m_SnippetTreeView.FindItem(itemID);
-            if (!item.isContainer)
-            {
-                return;
-            }
-
-            string category = item.displayName;
-            List<SnippetInfo> snippets = CodeExecutorData.GetSnippetsWithCategory(category);
-            if (snippets.Count > 0)
-            {
-                int dialogResult = EditorUtility.DisplayDialogComplex(
-                    "[Code Executor] Delete category",
-                    $"Whether to delete snippets under this category?\n{string.Join("\n", snippets.Select(v => $"- {v.name}"))}",
-                    "Keep snippets!",
-                    "Cancel",
-                    "Delete!"
-                );
-                if (dialogResult == 1)
-                {
-                    return;
-                }
-                if (dialogResult == 2)
-                {
-                    CodeExecutorManager.RemoveSnippetsWithCategory(category, false);
-                }
-            }
-
-            CodeExecutorManager.RemoveCategory(category, true);
-
-            ShowNotification("Deleted");
         }
 
         #endregion

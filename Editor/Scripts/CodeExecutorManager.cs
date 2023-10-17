@@ -230,6 +230,21 @@ namespace ChenPipi.CodeExecutor.Editor
         }
 
         /// <summary>
+        /// 增加代码段
+        /// </summary>
+        /// <param name="source">代码段</param>
+        /// <param name="notify">通知更新</param>
+        /// <returns></returns>
+        public static SnippetInfo AddSnippet(SnippetInfo source, bool notify = true)
+        {
+            // 更新数据
+            SnippetInfo snippet = CodeExecutorData.AddSnippet(source);
+            // 保存到本地并通知更新
+            SaveData(notify);
+            return snippet;
+        }
+
+        /// <summary>
         /// 克隆代码段
         /// </summary>
         /// <param name="source">源数据</param>

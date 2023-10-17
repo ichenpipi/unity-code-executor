@@ -77,7 +77,7 @@ namespace ChenPipi.CodeExecutor.Editor
             if (isMultiSelection) menu.AddDisabledItem(SnippetTreeViewMenuContent.Rename);
             else menu.AddItem(SnippetTreeViewMenuContent.Rename, false, SnippetTreeViewMenu_RenameSnippet, itemID);
             menu.AddItem(SnippetTreeViewMenuContent.Duplicate, false, SnippetTreeViewMenu_DuplicateSelectedSnippets);
-            menu.AddItem(SnippetTreeViewMenuContent.Delete, false, SnippetTreeViewMenu_DeleteSelectedSnippets);
+            menu.AddItem(SnippetTreeViewMenuContent.Delete, false, SnippetTreeViewMenu_DeleteSelectedSnippetsAndCategories);
 
             menu.AddSeparator(string.Empty);
             if (isMultiSelection)
@@ -111,8 +111,7 @@ namespace ChenPipi.CodeExecutor.Editor
 
             if (isMultiSelection) menu.AddDisabledItem(SnippetTreeViewMenuContent.Rename);
             else menu.AddItem(SnippetTreeViewMenuContent.Rename, false, SnippetTreeViewMenu_RenameCategory, itemID);
-            if (isMultiSelection) menu.AddDisabledItem(SnippetTreeViewMenuContent.Delete);
-            else menu.AddItem(SnippetTreeViewMenuContent.Delete, false, SnippetTreeViewMenu_DeleteCategory, itemID);
+            menu.AddItem(SnippetTreeViewMenuContent.Delete, false, SnippetTreeViewMenu_DeleteSelectedSnippetsAndCategories);
 
             menu.AddSeparator(string.Empty);
             menu.AddItem(SnippetTreeViewMenuContent.CreateNewSnippetUnderCategory, false, SnippetTreeViewMenu_CreateNewSnippetUnderCategory, itemID);
@@ -172,19 +171,14 @@ namespace ChenPipi.CodeExecutor.Editor
             }
         }
 
-        private void SnippetTreeViewMenu_DeleteSelectedSnippets()
+        private void SnippetTreeViewMenu_DeleteSelectedSnippetsAndCategories()
         {
-            DeleteSelectedSnippets();
+            DeleteSelectedSnippetsAndCategories();
         }
 
         private void SnippetTreeViewMenu_RenameCategory(object itemID)
         {
             BeginSnippetTreeViewItemRename((int)itemID);
-        }
-
-        private void SnippetTreeViewMenu_DeleteCategory(object itemID)
-        {
-            DeleteCategory((int)itemID);
         }
 
         private void SnippetTreeViewMenu_CollapseAllCategories()

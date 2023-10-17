@@ -219,6 +219,17 @@ UnityEngine.Debug.LogError(""[CodeExecutor] Hello World!"");",
             return snippet;
         }
 
+        public static SnippetInfo AddSnippet(SnippetInfo snippet)
+        {
+            if (string.IsNullOrEmpty(snippet.name))
+            {
+                snippet.name = "Unnamed";
+            }
+            snippets.Add(snippet);
+            s_GuidMap.Add(snippet.guid, snippet);
+            return snippet;
+        }
+
         public static void RemoveSnippet(string guid)
         {
             if (string.IsNullOrEmpty(guid) || !s_GuidMap.TryGetValue(guid, out SnippetInfo snippet))
@@ -367,30 +378,10 @@ UnityEngine.Debug.LogError(""[CodeExecutor] Hello World!"");",
             (string.IsNullOrEmpty(this.category) && string.IsNullOrEmpty(category)) ||
             (this.category != null && this.category.Equals(category, StringComparison.OrdinalIgnoreCase))
         );
-    }
 
-    [Serializable]
-    public class SnippetWrapper
-    {
-        public List<SnippetInfoSimplified> snippets = new List<SnippetInfoSimplified>();
-    }
-
-    [Serializable]
-    public class SnippetInfoSimplified
-    {
-        public string name = null;
-        public string code = null;
-        public string mode = null;
-        public string category = null;
-
-        public SnippetInfoSimplified() { }
-
-        public SnippetInfoSimplified(SnippetInfo snippet)
+        public override string ToString()
         {
-            name = snippet.name;
-            code = snippet.code;
-            mode = snippet.mode;
-            category = snippet.category;
+            return string.IsNullOrEmpty(this.category) ? this.name : $"[{this.category}] {this.name}";
         }
     }
 
